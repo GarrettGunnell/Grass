@@ -2,12 +2,10 @@
 
 Shader "Custom/Terrain" {
     Properties {
-        _LowSlopeColor ("Low Slope Color", Color) = (1, 1, 1)
-        _HighSlopeColor ("High Slope Color", Color) = (1, 1, 1)
-        _SlopeThreshold ("Slope Threshold", Range(0.01, 1)) = 0.2
+        _Albedo ("Albedo", Color) = (1, 1, 1)
         _TessellationEdgeLength ("Tessellation Edge Length", Range(1, 100)) = 50
         [NoScaleOffset] _HeightMap ("Height Map", 2D) = "Height Map" {}
-        [HideInInspector] _DisplacementStrength ("Displacement Strength", Range(0.1, 200)) = 5
+        _DisplacementStrength ("Displacement Strength", Range(0.1, 50)) = 5
         _NormalStrength ("Normals Strength", Range(0.1, 10)) = 1
     }
 
@@ -65,8 +63,8 @@ Shader "Custom/Terrain" {
             #pragma geometry gp
             #pragma fragment fp
 
-            float3 _LowSlopeColor, _HighSlopeColor;
-            float _NormalStrength, _SlopeThreshold;
+            float3 _Albedo;
+            float _NormalStrength;
 
             struct TessellationControlPoint {
                 float4 vertex : INTERNALTESSPOS;
@@ -187,27 +185,23 @@ Shader "Custom/Terrain" {
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float attenuation = tex2D(_ShadowMapTexture, f.data.shadowCoords.xy / f.data.shadowCoords.w);
 
-                float3 grad = tex2D(_HeightMap, f.data.uv).yzw;
-                float3 normal = normalize(float3(grad.x, 1, grad.y));
+                float2 du = float2(_HeightMap_TexelSize.x * 0.5, 0);
+                float u1 = tex2D(_HeightMap, f.data.uv - du);
+                float u2 = tex2D(_HeightMap, f.data.uv + du);
 
-                f.data.normal.xz *= 2.0f;
-                float3 centralDifference = normalize(f.data.normal);
-                float3 gradientCentralDifferenceBlend = normalize(float3(normal.xy + centralDifference.xy, normal.z * centralDifference.z));
+                float2 dv = float2(0, _HeightMap_TexelSize.y * 0.5);
+                float v1 = tex2D(_HeightMap, f.data.uv - dv);
+                float v2 = tex2D(_HeightMap, f.data.uv + dv);
 
-                float slope = 1.0f - gradientCentralDifferenceBlend.y;
+                float3 centralDifference = float3(u1 - u2, 1, v1 - v2);
+                centralDifference = normalize(centralDifference);
 
-                normal.xz *= _NormalStrength;
-                normal = normalize(float3(normal.x, 1, normal.z));
+                centralDifference.xz *= _NormalStrength;
+                float3 normal = normalize(float3(centralDifference.x, 1, centralDifference.z));
 
-                float normalContribution = DotClamped(lightDir, normal);
-                float3 albedo;
+                float ndotl = DotClamped(lightDir, normal);
                 
-                if (slope < _SlopeThreshold)
-                    albedo = lerp(_LowSlopeColor, _HighSlopeColor, slope / (_SlopeThreshold * 2));
-                else
-                    albedo = _HighSlopeColor;
-                
-                return albedo * attenuation * normalContribution;
+                return _Albedo * attenuation * ndotl;
             }
 
             ENDCG
