@@ -3,6 +3,7 @@
 Shader "Custom/Terrain" {
     Properties {
         _Albedo ("Albedo", Color) = (1, 1, 1)
+        _TerrainTex ("Terrain Texture", 2D) = "white" {}
         _TessellationEdgeLength ("Tessellation Edge Length", Range(1, 100)) = 50
         [NoScaleOffset] _HeightMap ("Height Map", 2D) = "Height Map" {}
         _DisplacementStrength ("Displacement Strength", Range(0.1, 50)) = 5
@@ -63,6 +64,8 @@ Shader "Custom/Terrain" {
             #pragma geometry gp
             #pragma fragment fp
 
+            sampler2D _TerrainTex;
+            float4 _TerrainTex_TexelSize, _TerrainTex_ST;
             float3 _Albedo;
             float _NormalStrength;
 
@@ -182,6 +185,8 @@ Shader "Custom/Terrain" {
             }
 
             float3 fp(g2f f) : SV_TARGET {
+                float3 col = tex2D(_TerrainTex, f.data.uv * _TerrainTex_ST.xy).rgb;
+                col = pow(col, 1.5f);
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float attenuation = tex2D(_ShadowMapTexture, f.data.shadowCoords.xy / f.data.shadowCoords.w);
 
@@ -201,7 +206,7 @@ Shader "Custom/Terrain" {
 
                 float ndotl = DotClamped(lightDir, normal);
                 
-                return _Albedo * attenuation * ndotl;
+                return col * _Albedo * attenuation * ndotl;
             }
 
             ENDCG
