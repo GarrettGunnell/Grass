@@ -4,10 +4,11 @@ Shader "Custom/Terrain" {
     Properties {
         _Albedo ("Albedo", Color) = (1, 1, 1)
         _TerrainTex ("Terrain Texture", 2D) = "white" {}
+        [NoScaleOffset] _NormalMap ("Normal Map", 2D) = "white" {}
         _TessellationEdgeLength ("Tessellation Edge Length", Range(1, 100)) = 50
         [NoScaleOffset] _HeightMap ("Height Map", 2D) = "Height Map" {}
         _DisplacementStrength ("Displacement Strength", Range(0.1, 50)) = 5
-        _NormalStrength ("Normals Strength", Range(0.1, 10)) = 1
+        _NormalStrength ("Normals Strength", Range(0.0, 10)) = 1
     }
 
     CGINCLUDE
@@ -64,7 +65,7 @@ Shader "Custom/Terrain" {
             #pragma geometry gp
             #pragma fragment fp
 
-            sampler2D _TerrainTex;
+            sampler2D _TerrainTex, _NormalMap;
             float4 _TerrainTex_TexelSize, _TerrainTex_ST;
             float3 _Albedo;
             float _NormalStrength;
@@ -187,6 +188,12 @@ Shader "Custom/Terrain" {
             float3 fp(g2f f) : SV_TARGET {
                 float3 col = tex2D(_TerrainTex, f.data.uv * _TerrainTex_ST.xy).rgb;
                 col = pow(col, 1.5f);
+                
+                float3 normal;
+                normal.xy = tex2D(_NormalMap, f.data.uv * _TerrainTex_ST.xy).wy * 2 - 1;
+                normal.z = sqrt(1 - saturate(dot(normal.xy, normal.xy)));
+                normal = normal.xzy;
+
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float attenuation = tex2D(_ShadowMapTexture, f.data.shadowCoords.xy / f.data.shadowCoords.w);
 
@@ -201,8 +208,9 @@ Shader "Custom/Terrain" {
                 float3 centralDifference = float3(u1 - u2, 1, v1 - v2);
                 centralDifference = normalize(centralDifference);
 
-                centralDifference.xz *= _NormalStrength;
-                float3 normal = normalize(float3(centralDifference.x, 1, centralDifference.z));
+                normal += centralDifference;
+                normal.xz *= _NormalStrength;
+                normal = normalize(float3(normal.x, 1, normal.z));
 
                 float ndotl = DotClamped(lightDir, normal);
                 
