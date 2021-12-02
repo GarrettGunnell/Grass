@@ -1,0 +1,17 @@
+﻿#pragma kernel DisplacePlane
+
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+RWStructuredBuffer<float3> _Vertices;
+StructuredBuffer<float2> _UVs;
+
+float _DisplacementStrength;
+
+[numthreads(128,1,1)]
+void DisplacePlane(uint3 id : SV_DispatchThreadID) {
+    float3 vert = _Vertices[id.x];
+    float2 uv = _UVs[id.x];
+    float4 displacement = _HeightMap.SampleLevel(sampler_HeightMap, uv, 0);
+
+    _Vertices[id.x] = float3(vert.x, displacement.r * _DisplacementStrength, vert.z);
+}
