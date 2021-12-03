@@ -14,15 +14,23 @@ public class Grass : MonoBehaviour {
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         grassPositionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
 
-        initializeGrassShader.SetFloat("_Dimension", resolution);
+        initializeGrassShader.SetInt("_Dimension", resolution);
         initializeGrassShader.SetBuffer(0, "_GrassPositionsBuffer", grassPositionsBuffer);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassPositionsBuffer);
+
+        Vector3[] positions = new Vector3[resolution * resolution];
+
+        grassPositionsBuffer.GetData(positions);
+
+        foreach (Vector3 pos in positions) {
+            Debug.Log($"{pos.x}, {pos.y}, {pos.z}");
+        }
     }
 
     void Update() {
         grassMaterial.SetBuffer("positionBuffer", grassPositionsBuffer);
-        Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial, grassMesh.bounds, grassPositionsBuffer.count);
+        Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassPositionsBuffer.count);
     }
     
     void OnDisable() {
