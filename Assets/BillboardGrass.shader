@@ -13,6 +13,8 @@ Shader "Unlit/BillboardGrass" {
             #pragma vertex vert
             #pragma fragment frag
             
+            #pragma target 4.5
+
             #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
@@ -28,10 +30,17 @@ Shader "Unlit/BillboardGrass" {
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            StructuredBuffer<float3> positionBuffer;
 
-            v2f vert (VertexData v) {
+            v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+
+                float3 position = positionBuffer[instanceID];
+            
+                float3 localPosition = v.vertex + float3(0.0f, 0.5f, 0.0f);
+                float3 worldPosition = positionBuffer[instanceID] + localPosition;
+
+                o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 
                 return o;

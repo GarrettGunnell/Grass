@@ -7,8 +7,8 @@ uint _Dimension;
 [numthreads(8,8,1)]
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < _Dimension && id.y < _Dimension) {
-        float x = (1000 / _Dimension) * id.x - 500;
-        float y = (1000 / _Dimension) * id.y - 500;
+        float x = (1000.0f / _Dimension) * id.x - 500.0f;
+        float y = (1000.0f / _Dimension) * id.y - 500.0f;
 
         float3 pos = float3(x, y, 0.0f);
 

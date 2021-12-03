@@ -226,7 +226,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
       propertyPath: m_LocalScale.x
@@ -539,68 +539,18 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8188846882738213437, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
---- !u!1001 &3305686659487820140
-PrefabInstance:
+--- !u!114 &1422709753
+MonoBehaviour:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3305686659716897429, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_Name
-      value: BillboardGrass
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897429, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_RootOrder
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 24.814
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3305686659716897430, guid: d413438458390974b94460e26be6e0ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d413438458390974b94460e26be6e0ff, type: 3}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422709744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47134b66cbe681642a7512dbacbf9aec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resolution: 100
+  grassMaterial: {fileID: 2100000, guid: 5db16e570f58b294ba71dd3f4ebce284, type: 2}
+  grassMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
