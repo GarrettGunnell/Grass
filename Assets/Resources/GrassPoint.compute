@@ -1,14 +1,17 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel InitializeGrass
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+RWStructuredBuffer<float3> _GrassPositionsBuffer;
+
+uint _Dimension;
 
 [numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    // TODO: insert actual code here!
+void InitializeGrass(uint3 id : SV_DispatchThreadID) {
+    if (id.x < _Dimension && id.y < _Dimension) {
+        float x = (1000 / _Dimension) * id.x - 500;
+        float y = (1000 / _Dimension) * id.y - 500;
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+        float3 pos = float3(x, y, 0.0f);
+
+        _GrassPositionsBuffer[id.x + id.y * _Dimension] = pos;
+    }
 }
