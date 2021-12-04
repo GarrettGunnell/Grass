@@ -2,14 +2,14 @@
 
 RWStructuredBuffer<float3> _GrassPositionsBuffer;
 
-int _Dimension;
+int _Dimension, _Scale;
 
 [numthreads(8,8,1)]
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
 
         float3 pos = 0.0f;
-        pos.xz = id.xy - float(_Dimension) * 0.5;
+        pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
         pos.y = 0.5f;
 
         _GrassPositionsBuffer[id.x + id.y * _Dimension] = pos;

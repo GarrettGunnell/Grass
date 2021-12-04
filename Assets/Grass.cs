@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Grass : MonoBehaviour {
     public int resolution = 100;
+    public int scale = 1;
     public Material grassMaterial;
     public Mesh grassMesh;
 
@@ -11,10 +12,12 @@ public class Grass : MonoBehaviour {
     private ComputeBuffer grassPositionsBuffer;
 
     void Start() {
+        resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         grassPositionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
 
         initializeGrassShader.SetInt("_Dimension", resolution);
+        initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassPositionsBuffer", grassPositionsBuffer);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassPositionsBuffer);
