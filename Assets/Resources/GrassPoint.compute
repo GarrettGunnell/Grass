@@ -1,6 +1,8 @@
 #pragma kernel InitializeGrass
 
-RWStructuredBuffer<float3> _GrassPositionsBuffer;
+#include "Simplex.compute"
+
+RWStructuredBuffer<float4> _GrassDataBuffer;
 
 int _Dimension, _Scale;
 
@@ -8,10 +10,16 @@ int _Dimension, _Scale;
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
 
-        float3 pos = 0.0f;
+        float4 pos = 0.0f;
         pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
-        pos.y = 0.5f;
 
-        _GrassPositionsBuffer[id.x + id.y * _Dimension] = pos;
+        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.2f;
+        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.2f;
+
+        pos.y += 0.5f;
+
+        pos.w = max(0.75f, abs(snoise(float3(pos.xz, 0.0f) * 0.3f) * 1.5f));
+
+        _GrassDataBuffer[id.x + id.y * _Dimension] = pos;
     }
 }

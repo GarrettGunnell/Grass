@@ -30,7 +30,7 @@ Shader "Unlit/BillboardGrass" {
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            StructuredBuffer<float3> positionBuffer;
+            StructuredBuffer<float4> positionBuffer;
             float _Rotation;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
@@ -45,7 +45,11 @@ Shader "Unlit/BillboardGrass" {
                 v2f o;
             
                 float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
-                float4 worldPosition = float4(positionBuffer[instanceID] + localPosition, 1.0f);
+                float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
+
+                //worldPosition.y -= 0.5f;
+                worldPosition.y *= positionBuffer[instanceID].w;
+                //worldPosition.y += 0.5f;
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
