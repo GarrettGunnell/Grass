@@ -43,13 +43,9 @@ Shader "Unlit/BillboardGrass" {
 
             v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
                 v2f o;
-
-                float3 position = positionBuffer[instanceID];
             
-                float3 localPosition = v.vertex + float3(0.0f, 0.5f, 0.0f);
-                localPosition = RotateAroundYInDegrees(float4(localPosition, 1.0f), _Rotation).xyz;
+                float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
                 float4 worldPosition = float4(positionBuffer[instanceID] + localPosition, 1.0f);
-
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
