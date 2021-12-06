@@ -17,6 +17,7 @@ Shader "Unlit/BillboardGrass" {
 
             #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
+            #include "Random.cginc"
 
             struct VertexData {
                 float4 vertex : POSITION;
@@ -46,12 +47,19 @@ Shader "Unlit/BillboardGrass" {
             
                 float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
 
-                float cosTime = cos(_Time.y * _WindStrength);
-
-                float trigValue = (cosTime * cosTime * 0.5f + cosTime * 0.75f) * 0.5f;
-
-                localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w;
-                localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.1f;
+                float localWindVariance = min(max(0.4f, randValue(instanceID)), 0.75f);
+                
+                float cosTime;
+                if (localWindVariance > 0.6f)
+                    cosTime = cos(_Time.y * (_WindStrength - (positionBuffer[instanceID].w - 1.0f)));
+                else
+                    cosTime = cos(_Time.y * ((_WindStrength - (positionBuffer[instanceID].w - 1.0f)) + localWindVariance * 0.1f));
+                    
+    
+                float trigValue = ((cosTime * cosTime) * 0.65f) - localWindVariance * 0.5f;
+                
+                localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w * localWindVariance * 0.6f;
+                localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.4f;
 
                 float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
 

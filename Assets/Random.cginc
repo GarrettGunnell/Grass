@@ -25,3 +25,8 @@ float randValue() {
 void initRand(uint seed) {
     wang_hash(seed);
 }
+
+float randValue(uint seed) {
+    initRand(seed);
+    return randValue();
+}
