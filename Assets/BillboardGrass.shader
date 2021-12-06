@@ -46,11 +46,13 @@ Shader "Unlit/BillboardGrass" {
             
                 float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
 
-                float trigValue = (cos(_Time * _WindStrength) * cos(_Time * _WindStrength) * 0.5f + cos(_Time * _WindStrength) * 0.75f) * 0.5f;
+                float cosTime = cos(_Time.y * _WindStrength);
+
+                float trigValue = (cosTime * cosTime * 0.5f + cosTime * 0.75f) * 0.5f;
 
                 localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w;
                 localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.1f;
-                
+
                 float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
 
                 worldPosition.y *= positionBuffer[instanceID].w;
