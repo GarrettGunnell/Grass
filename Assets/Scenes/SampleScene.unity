@@ -551,6 +551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47134b66cbe681642a7512dbacbf9aec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 100
+  resolution: 300
+  scale: 2
   grassMaterial: {fileID: 2100000, guid: 5db16e570f58b294ba71dd3f4ebce284, type: 2}
   grassMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}

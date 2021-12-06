@@ -1,7 +1,7 @@
 Shader "Unlit/BillboardGrass" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
-        
+        _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
     }
 
     SubShader {
@@ -31,7 +31,7 @@ Shader "Unlit/BillboardGrass" {
             sampler2D _MainTex;
             float4 _MainTex_ST;
             StructuredBuffer<float4> positionBuffer;
-            float _Rotation;
+            float _Rotation, _WindStrength;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -45,11 +45,15 @@ Shader "Unlit/BillboardGrass" {
                 v2f o;
             
                 float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
+
+                float trigValue = (cos(_Time * _WindStrength) * cos(_Time * _WindStrength) * 0.5f + cos(_Time * _WindStrength) * 0.75f) * 0.5f;
+
+                localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w;
+                localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.1f;
+                
                 float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
 
-                //worldPosition.y -= 0.5f;
                 worldPosition.y *= positionBuffer[instanceID].w;
-                //worldPosition.y += 0.5f;
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
