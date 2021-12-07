@@ -7,6 +7,7 @@ public class Grass : MonoBehaviour {
     public int scale = 1;
     public Material grassMaterial;
     public Mesh grassMesh;
+    public Texture heightMap;
 
     private ComputeShader initializeGrassShader;
     private ComputeBuffer grassDataBuffer;
@@ -19,6 +20,7 @@ public class Grass : MonoBehaviour {
         initializeGrassShader.SetInt("_Dimension", resolution);
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
+        initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         /*

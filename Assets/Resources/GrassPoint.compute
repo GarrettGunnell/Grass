@@ -3,6 +3,7 @@
 #include "Simplex.compute"
 
 RWStructuredBuffer<float4> _GrassDataBuffer;
+Texture2D<float4> _HeightMap;
 
 int _Dimension, _Scale;
 
