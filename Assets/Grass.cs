@@ -18,7 +18,6 @@ public class Grass : MonoBehaviour {
 
     private struct GrassData {
         public Vector4 position;
-        public float saturationLevel;
     }
 
     void Start() {

@@ -2,9 +2,6 @@ Shader "Unlit/BillboardGrass" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
-
-        _GrassNoiseTex ("Saturation Map", 2D) = "white" {}
-        _Saturation ("Saturation", Range(0.01, 2.0)) = 1.0
     }
 
     SubShader {
@@ -35,7 +32,6 @@ Shader "Unlit/BillboardGrass" {
 
             struct GrassData {
                 float4 position;
-                float saturationLevel;
             };
 
             sampler2D _MainTex, _HeightMap;
@@ -43,8 +39,6 @@ Shader "Unlit/BillboardGrass" {
             StructuredBuffer<GrassData> positionBuffer;
             float _Rotation, _WindStrength;
             
-            float _Saturation;
-
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
                 float sina, cosa;
@@ -81,8 +75,6 @@ Shader "Unlit/BillboardGrass" {
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
                 o.saturationLevel = max(o.saturationLevel, 0.5f);
-
-                //o.saturationLevel = positionBuffer[instanceID].saturationLevel;
                 
                 return o;
             }
