@@ -24,7 +24,7 @@ Shader "Custom/Terrain" {
         };
 
         float TessellationHeuristic(float3 cp0, float3 cp1) {
-            return 1.0f;
+            //return 1.0f;
             float edgeLength = distance(cp0, cp1);
             float3 edgeCenter = (cp0 + cp1) * 0.5;
             float viewDistance = distance(edgeCenter, _WorldSpaceCameraPos);

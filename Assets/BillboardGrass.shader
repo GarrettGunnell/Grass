@@ -27,9 +27,10 @@ Shader "Unlit/BillboardGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float2 fakeUV : TEXCOORD1;
             };
 
-            sampler2D _MainTex;
+            sampler2D _MainTex, _HeightMap;
             float4 _MainTex_ST;
             StructuredBuffer<float4> positionBuffer;
             float _Rotation, _WindStrength;
@@ -60,13 +61,14 @@ Shader "Unlit/BillboardGrass" {
                 
                 localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w * localWindVariance * 0.6f;
                 localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.4f;
-
+                
                 float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
 
-                worldPosition.y *= positionBuffer[instanceID].w;
+                //worldPosition.y *= positionBuffer[instanceID].w;
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.fakeUV = float2(positionBuffer[instanceID].y, positionBuffer[instanceID].w);
                 
                 return o;
             }
@@ -78,6 +80,7 @@ Shader "Unlit/BillboardGrass" {
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
                 
+                //return i.fakeUV.x;
                 return col * ndotl;
             }
 
