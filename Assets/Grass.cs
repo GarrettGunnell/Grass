@@ -60,6 +60,17 @@ public class Grass : MonoBehaviour {
     }
 
     void Update() {
+        grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial.SetFloat("_Rotation", 0.0f);
+        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
+        grassMaterial2 = new Material(grassMaterial);
+        grassMaterial2.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial2.SetFloat("_Rotation", 50.0f);
+        grassMaterial2.SetFloat("_DisplacementStrength", displacementStrength);
+        grassMaterial3 = new Material(grassMaterial);
+        grassMaterial3.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial3.SetFloat("_Rotation", -50.0f);
+        grassMaterial3.SetFloat("_DisplacementStrength", displacementStrength);
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial2, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial3, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);

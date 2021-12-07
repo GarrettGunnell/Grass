@@ -3,6 +3,7 @@ Shader "Unlit/BillboardGrass" {
         _MainTex ("Texture", 2D) = "white" {}
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
         _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
+        _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
     }
 
     SubShader {
@@ -38,7 +39,7 @@ Shader "Unlit/BillboardGrass" {
             sampler2D _MainTex, _HeightMap;
             float4 _MainTex_ST;
             StructuredBuffer<GrassData> positionBuffer;
-            float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength;
+            float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
             
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -55,7 +56,8 @@ Shader "Unlit/BillboardGrass" {
             }   
 
             bool cullVertex(float3 p, float bias) {
-                return VertexIsBelowClipPlane(p, 0, bias) ||
+                return  distance(_WorldSpaceCameraPos, p) > _LODCutoff ||
+                        VertexIsBelowClipPlane(p, 0, bias) ||
                         VertexIsBelowClipPlane(p, 1, bias) ||
                         VertexIsBelowClipPlane(p, 2, bias) ||
                         VertexIsBelowClipPlane(p, 3, -_DisplacementStrength);
@@ -85,14 +87,14 @@ Shader "Unlit/BillboardGrass" {
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
-                o.vertex = UnityObjectToClipPos(worldPosition);
+                if (cullVertex(worldPosition, -_CullingBias * _DisplacementStrength))
+                    o.vertex = 0.0f;
+                else
+                    o.vertex = UnityObjectToClipPos(worldPosition);
+
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
                 o.saturationLevel = max(o.saturationLevel, 0.5f);
-
-                if (cullVertex(worldPosition, -_CullingBias * _DisplacementStrength)) {
-                    o.vertex = 0.0f;
-                }
                 
                 return o;
             }
