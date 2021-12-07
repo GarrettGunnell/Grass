@@ -19,13 +19,12 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
         pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.2f;
         pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.2f;
 
-        float2 uvPos = pos.xz;
-        uvPos = (id.xy) * (1.0f / float(_Scale));
-        uvPos.xy /= float(_Dimension) * (1.0f / float(_Scale));
-        uvPos.y = 1 - uvPos.y;
-        uvPos.x = 1 - uvPos.x;
+        float2 uv = pos.xz;
+        uv = (id.xy) * (1.0f / float(_Scale));
+        uv.xy /= float(_Dimension) * (1.0f / float(_Scale));
+        uv.y = 1 - uv.y;
+        uv.x = 1 - uv.x;
 
-        float2 uv = uvPos;
         float4 displacement = _HeightMap.SampleLevel(sampler_HeightMap, uv, 0);
 
         pos.y += displacement.r * _DisplacementStrength + 0.5f;

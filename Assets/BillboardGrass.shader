@@ -29,7 +29,6 @@ Shader "Unlit/BillboardGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float2 fakeUV : TEXCOORD1;
             };
 
             sampler2D _MainTex, _HeightMap;
@@ -71,7 +70,6 @@ Shader "Unlit/BillboardGrass" {
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.fakeUV = float2(positionBuffer[instanceID].y, positionBuffer[instanceID].w);
                 
                 return o;
             }
@@ -83,7 +81,6 @@ Shader "Unlit/BillboardGrass" {
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
                 
-                //return i.fakeUV.x;
                 return col * ndotl;
             }
 
