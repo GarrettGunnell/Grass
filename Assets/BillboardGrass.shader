@@ -2,6 +2,8 @@ Shader "Unlit/BillboardGrass" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
+
+        _GrassNoiseTex ("Saturation Map", 2D) = "white" {}
     }
 
     SubShader {
@@ -61,6 +63,7 @@ Shader "Unlit/BillboardGrass" {
                 
                 localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w * localWindVariance * 0.6f;
                 localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.4f;
+                localPosition.y *= v.uv.y * (1.0f + positionBuffer[instanceID].w);
                 
                 float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
 
