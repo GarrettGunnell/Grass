@@ -14,7 +14,7 @@ public class Grass : MonoBehaviour {
     public bool updateGrass;
 
     private ComputeShader initializeGrassShader;
-    private ComputeBuffer grassDataBuffer;
+    private ComputeBuffer grassDataBuffer, argsBuffer;
 
     private struct GrassData {
         public Vector4 position;
@@ -29,7 +29,6 @@ public class Grass : MonoBehaviour {
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
-        initializeGrassShader.SetTexture(0, "_SaturationMap", saturationMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
@@ -42,6 +41,16 @@ public class Grass : MonoBehaviour {
             Debug.Log($"{pos.x}, {pos.y}, {pos.z}");
         }
         */
+
+        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
+        // Arguments for drawing mesh.
+        // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
+        args[0] = (uint)grassMesh.GetIndexCount(0);
+        args[1] = (uint)grassDataBuffer.count;
+        args[2] = (uint)grassMesh.GetIndexStart(0);
+        args[3] = (uint)grassMesh.GetBaseVertex(0);
+        argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+        argsBuffer.SetData(args);
     }
 
     void updateGrassBuffer() {
@@ -58,15 +67,15 @@ public class Grass : MonoBehaviour {
     void Update() {
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial.SetFloat("_Rotation", 0.0f);
-        Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassDataBuffer.count);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
         Material grassMaterial2 = new Material(grassMaterial);
         grassMaterial2.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial2.SetFloat("_Rotation", 50.0f);
-        Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial2, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassDataBuffer.count);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial2, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
         Material grassMaterial3 = new Material(grassMaterial);
         grassMaterial3.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial3.SetFloat("_Rotation", -50.0f);
-        Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial3, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassDataBuffer.count);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial3, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
 
         if (updateGrass) {
             updateGrassBuffer();
@@ -76,6 +85,8 @@ public class Grass : MonoBehaviour {
     
     void OnDisable() {
         grassDataBuffer.Release();
+        argsBuffer.Release();
         grassDataBuffer = null;
+        argsBuffer = null;
     }
 }
