@@ -5,6 +5,7 @@ using UnityEngine;
 public class Grass : MonoBehaviour {
     public int resolution = 100;
     public int scale = 1;
+    public float displacementStrength = 200.0f;
     public Material grassMaterial;
     public Mesh grassMesh;
     public Texture heightMap;
@@ -21,6 +22,7 @@ public class Grass : MonoBehaviour {
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
+        initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         /*
