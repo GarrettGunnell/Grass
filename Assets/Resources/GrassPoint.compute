@@ -2,9 +2,16 @@
 
 #include "Simplex.compute"
 
-RWStructuredBuffer<float4> _GrassDataBuffer;
+struct GrassData {
+    float4 position;
+    float saturationLevel;
+};
+
+RWStructuredBuffer<GrassData> _GrassDataBuffer;
 Texture2D<float4> _HeightMap;
+Texture2D<float4> _SaturationMap;
 SamplerState sampler_HeightMap;
+SamplerState sampler_SaturationMap;
 
 int _Dimension, _Scale;
 float _DisplacementStrength;
@@ -12,7 +19,7 @@ float _DisplacementStrength;
 [numthreads(8,8,1)]
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
-
+        GrassData grass;
         float4 pos = 0.0f;
         pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
 
@@ -29,8 +36,16 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
 
         pos.y += displacement.r * _DisplacementStrength + 0.5f;
 
-        pos.w = max(0.75f, abs(snoise(float3(pos.xz, 0.0f) * 0.3f) * 2.5f));
+        pos.w = max(1.0f, abs(snoise(float3(pos.xz, 0.0f) * 0.2f) * 2.5f));
 
-        _GrassDataBuffer[id.x + id.y * _Dimension] = pos;
+        grass.position = pos;
+        
+        float4 saturationVector = _SaturationMap.SampleLevel(sampler_SaturationMap, uv, 0);
+        float saturation = (saturationVector.g + saturationVector.b) / 2.0f;
+        
+
+        grass.saturationLevel = saturation;
+
+        _GrassDataBuffer[id.x + id.y * _Dimension] = grass;
     }
 }

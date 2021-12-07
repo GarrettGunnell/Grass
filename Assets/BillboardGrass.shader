@@ -4,6 +4,7 @@ Shader "Unlit/BillboardGrass" {
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
 
         _GrassNoiseTex ("Saturation Map", 2D) = "white" {}
+        _Saturation ("Saturation", Range(0.01, 2.0)) = 1.0
     }
 
     SubShader {
@@ -29,12 +30,20 @@ Shader "Unlit/BillboardGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float saturationLevel : TEXCOORD1;
+            };
+
+            struct GrassData {
+                float4 position;
+                float saturationLevel;
             };
 
             sampler2D _MainTex, _HeightMap;
             float4 _MainTex_ST;
-            StructuredBuffer<float4> positionBuffer;
+            StructuredBuffer<GrassData> positionBuffer;
             float _Rotation, _WindStrength;
+            
+            float _Saturation;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -50,26 +59,30 @@ Shader "Unlit/BillboardGrass" {
                 float3 localPosition = RotateAroundYInDegrees(v.vertex, _Rotation).xyz;
 
                 float localWindVariance = min(max(0.4f, randValue(instanceID)), 0.75f);
+
+                float4 grassPosition = positionBuffer[instanceID].position;
                 
                 float cosTime;
                 if (localWindVariance > 0.6f)
-                    cosTime = cos(_Time.y * (_WindStrength - (positionBuffer[instanceID].w - 1.0f)));
+                    cosTime = cos(_Time.y * (_WindStrength - (grassPosition.w - 1.0f)));
                 else
-                    cosTime = cos(_Time.y * ((_WindStrength - (positionBuffer[instanceID].w - 1.0f)) + localWindVariance * 0.1f));
+                    cosTime = cos(_Time.y * ((_WindStrength - (grassPosition.w - 1.0f)) + localWindVariance * 0.1f));
                     
     
                 float trigValue = ((cosTime * cosTime) * 0.65f) - localWindVariance * 0.5f;
                 
-                localPosition.x += v.uv.y * trigValue * positionBuffer[instanceID].w * localWindVariance * 0.6f;
-                localPosition.z += v.uv.y * trigValue * positionBuffer[instanceID].w * 0.4f;
-                localPosition.y *= v.uv.y * (1.0f + positionBuffer[instanceID].w);
+                localPosition.x += v.uv.y * trigValue * grassPosition.w * localWindVariance * 0.6f;
+                localPosition.z += v.uv.y * trigValue * grassPosition.w * 0.4f;
+                localPosition.y *= v.uv.y * (1.0f + grassPosition.w);
                 
-                float4 worldPosition = float4(positionBuffer[instanceID].xyz + localPosition, 1.0f);
-
-                //worldPosition.y *= positionBuffer[instanceID].w;
+                float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
+                o.saturationLevel = max(o.saturationLevel, 0.5f);
+
+                //o.saturationLevel = positionBuffer[instanceID].saturationLevel;
                 
                 return o;
             }
@@ -77,7 +90,13 @@ Shader "Unlit/BillboardGrass" {
             fixed4 frag (v2f i) : SV_Target {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 clip(-(0.5 - col.a));
+
+                float luminance = LinearRgbToLuminance(col);
+
+                float saturation = lerp(1.0f, i.saturationLevel, i.uv.y * i.uv.y * i.uv.y * i.uv.y);
+                col.r /= saturation;
                 
+             
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
                 

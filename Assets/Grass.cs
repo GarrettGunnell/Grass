@@ -9,19 +9,28 @@ public class Grass : MonoBehaviour {
     public Material grassMaterial;
     public Mesh grassMesh;
     public Texture heightMap;
+    public Texture saturationMap;
+
+    public bool updateGrass;
 
     private ComputeShader initializeGrassShader;
     private ComputeBuffer grassDataBuffer;
 
+    private struct GrassData {
+        public Vector4 position;
+        public float saturationLevel;
+    }
+
     void Start() {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
-        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 4);
+        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 5);
 
         initializeGrassShader.SetInt("_Dimension", resolution);
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
+        initializeGrassShader.SetTexture(0, "_SaturationMap", saturationMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
@@ -36,6 +45,17 @@ public class Grass : MonoBehaviour {
         */
     }
 
+    void updateGrassBuffer() {
+        initializeGrassShader.SetInt("_Dimension", resolution);
+        initializeGrassShader.SetInt("_Scale", scale);
+        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
+        initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
+        initializeGrassShader.SetTexture(0, "_SaturationMap", saturationMap);
+        initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
+        initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
+        grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
+    }
+
     void Update() {
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial.SetFloat("_Rotation", 0.0f);
@@ -48,6 +68,11 @@ public class Grass : MonoBehaviour {
         grassMaterial3.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial3.SetFloat("_Rotation", -50.0f);
         Graphics.DrawMeshInstancedProcedural(grassMesh, 0, grassMaterial3, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassDataBuffer.count);
+
+        if (updateGrass) {
+            updateGrassBuffer();
+            updateGrass = false;
+        }
     }
     
     void OnDisable() {
