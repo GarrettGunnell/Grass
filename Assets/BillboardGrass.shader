@@ -2,6 +2,7 @@ Shader "Unlit/BillboardGrass" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
+        _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
     }
 
     SubShader {
@@ -37,7 +38,7 @@ Shader "Unlit/BillboardGrass" {
             sampler2D _MainTex, _HeightMap;
             float4 _MainTex_ST;
             StructuredBuffer<GrassData> positionBuffer;
-            float _Rotation, _WindStrength;
+            float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength;
             
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -45,6 +46,19 @@ Shader "Unlit/BillboardGrass" {
                 sincos(alpha, sina, cosa);
                 float2x2 m = float2x2(cosa, -sina, sina, cosa);
                 return float4(mul(m, vertex.xz), vertex.yw).xzyw;
+            }
+
+            bool VertexIsBelowClipPlane(float3 p, int planeIndex, float bias) {
+                float4 plane = unity_CameraWorldClipPlanes[planeIndex];
+
+                return dot(float4(p, 1), plane) < bias;
+            }   
+
+            bool cullVertex(float3 p, float bias) {
+                return VertexIsBelowClipPlane(p, 0, bias) ||
+                        VertexIsBelowClipPlane(p, 1, bias) ||
+                        VertexIsBelowClipPlane(p, 2, bias) ||
+                        VertexIsBelowClipPlane(p, 3, -_DisplacementStrength);
             }
 
             v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
@@ -75,6 +89,10 @@ Shader "Unlit/BillboardGrass" {
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
                 o.saturationLevel = max(o.saturationLevel, 0.5f);
+
+                if (cullVertex(worldPosition, -_CullingBias * _DisplacementStrength)) {
+                    o.vertex = 0.0f;
+                }
                 
                 return o;
             }

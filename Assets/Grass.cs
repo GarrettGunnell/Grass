@@ -9,7 +9,7 @@ public class Grass : MonoBehaviour {
     public Material grassMaterial;
     public Mesh grassMesh;
     public Texture heightMap;
-    
+
     public bool updateGrass;
 
     private ComputeShader initializeGrassShader;
@@ -24,6 +24,7 @@ public class Grass : MonoBehaviour {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 4);
+        argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         updateGrassBuffer();
     }
@@ -43,17 +44,19 @@ public class Grass : MonoBehaviour {
         args[1] = (uint)grassDataBuffer.count;
         args[2] = (uint)grassMesh.GetIndexStart(0);
         args[3] = (uint)grassMesh.GetBaseVertex(0);
-        argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         argsBuffer.SetData(args);
 
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial.SetFloat("_Rotation", 0.0f);
+        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial2 = new Material(grassMaterial);
         grassMaterial2.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial2.SetFloat("_Rotation", 50.0f);
+        grassMaterial2.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial3 = new Material(grassMaterial);
         grassMaterial3.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial3.SetFloat("_Rotation", -50.0f);
+        grassMaterial3.SetFloat("_DisplacementStrength", displacementStrength);
     }
 
     void Update() {
