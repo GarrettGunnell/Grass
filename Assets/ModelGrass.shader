@@ -39,6 +39,14 @@ Shader "Unlit/ModelGrass" {
             float4 _Albedo;
             StructuredBuffer<GrassData> positionBuffer;
             float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
+
+            float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
+                float alpha = degrees * UNITY_PI / 180.0;
+                float sina, cosa;
+                sincos(alpha, sina, cosa);
+                float2x2 m = float2x2(cosa, -sina, sina, cosa);
+                return float4(mul(m, vertex.xz), vertex.yw).xzyw;
+            }
             
             float4 RotateAroundXInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -66,8 +74,10 @@ Shader "Unlit/ModelGrass" {
                 v2f o;
             
                 
-                
-                float3 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f).xyz;
+                float idHash = randValue(instanceID);
+
+                float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
+                localPosition = RotateAroundYInDegrees(localPosition, idHash * 90.0f);
                 
                 
                 float4 worldPosition = float4(positionBuffer[instanceID].position.xyz + localPosition, 1.0f);
