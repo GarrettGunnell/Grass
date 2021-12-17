@@ -52,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: c9db86d41257651498f91de41e7a45ee, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TerrainTex:
-        m_Texture: {fileID: 2800000, guid: 80adeec0eaea4364a8bb42b5b0977a5a, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 10, y: 10}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -79,18 +79,18 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NormalStrength: 0.39
+    - _NormalStrength: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SlopeThreshold: 0.2
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessellationEdgeLength: 28.4
+    - _TessellationEdgeLength: 100
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Albedo: {r: 0.9580304, g: 1, b: 0.8915094, a: 1}
+    - _Albedo: {r: 0.34117648, g: 0.4784314, b: 0.2784314, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HighSlopeColor: {r: 1, g: 1, b: 1, a: 1}

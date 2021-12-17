@@ -58,7 +58,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CullingBias: 0.5
+    - _CullingBias: 0.394
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -74,9 +74,10 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _WindStrength: 1
+    - _WindStrength: 1.5
     - _ZWrite: 1
     m_Colors:
+    - _AOColor: {r: 0.41728458, g: 0.49056602, b: 0.38643643, a: 1}
     - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
