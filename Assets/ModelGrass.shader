@@ -81,13 +81,9 @@ Shader "Unlit/ModelGrass" {
                 
                 
                 float4 worldPosition = float4(positionBuffer[instanceID].position.xyz + localPosition, 1.0f);
-
-                /*
-                if (cullVertex(worldPosition, -_CullingBias * max(1.0f, _DisplacementStrength)))
-                    o.vertex = 0.0f;
-                else*/
-                    o.vertex = UnityObjectToClipPos(worldPosition);
-
+                worldPosition.y *= 1.0f + 0.5f * positionBuffer[instanceID].position.w;
+                
+                o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = v.uv;
                 o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
                 o.saturationLevel = max(o.saturationLevel, 0.5f);
