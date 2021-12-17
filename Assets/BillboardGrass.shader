@@ -87,7 +87,7 @@ Shader "Unlit/BillboardGrass" {
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
-                if (cullVertex(worldPosition, -_CullingBias * _DisplacementStrength))
+                if (cullVertex(worldPosition, -_CullingBias * max(1.0f, _DisplacementStrength)))
                     o.vertex = 0.0f;
                 else
                     o.vertex = UnityObjectToClipPos(worldPosition);
