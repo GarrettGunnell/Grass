@@ -18,12 +18,13 @@ public class ModelGrass : MonoBehaviour {
 
     private struct GrassData {
         public Vector4 position;
+        public float displacement;
     }
 
     void Start() {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
-        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 4);
+        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 5);
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         updateGrassBuffer();

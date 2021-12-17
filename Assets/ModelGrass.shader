@@ -35,6 +35,7 @@ Shader "Unlit/ModelGrass" {
 
             struct GrassData {
                 float4 position;
+                float displacement;
             };
 
             float4 _Albedo, _AOColor;
@@ -88,8 +89,11 @@ Shader "Unlit/ModelGrass" {
                 //localPosition.xz += grassPosition.w * v.uv.y * animationDirection.xz + float2(1.0f, 1.0f);
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
-            
+
+                worldPosition.y -= positionBuffer[instanceID].displacement;
                 worldPosition.y *= 1.0f + 0.5f * positionBuffer[instanceID].position.w;
+                
+                worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = v.uv;

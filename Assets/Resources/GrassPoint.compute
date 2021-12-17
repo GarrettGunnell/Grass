@@ -4,6 +4,7 @@
 
 struct GrassData {
     float4 position;
+    float displacement;
 };
 
 RWStructuredBuffer<GrassData> _GrassDataBuffer;
@@ -36,6 +37,7 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
         pos.w = max(1.0f, abs(snoise(float3(pos.xz, 0.0f) * 0.2f) * 2.5f));
 
         grass.position = pos;
+        grass.displacement = displacement.r * _DisplacementStrength;
 
         _GrassDataBuffer[id.x + id.y * _Dimension] = grass;
     }
