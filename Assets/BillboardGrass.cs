@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BillboardGrass : MonoBehaviour {
+public class Grass : MonoBehaviour {
     public int resolution = 100;
     public int scale = 1;
     public float displacementStrength = 200.0f;
