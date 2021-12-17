@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BillboardGrass
-  m_Shader: {fileID: 4800000, guid: 1e3d0932a4d8f484294856ebf8ddd11d, type: 3}
+  m_Name: ModelGrass
+  m_Shader: {fileID: 4800000, guid: 80e5b1da37056d84b902984df61ad00b, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -40,15 +40,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 8416135aee3fca84eb3ab5438ada998a, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 49934f2ef9748c94fb48f724fa0b1435, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -62,7 +58,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CullingBias: 0.55
+    - _CullingBias: 0.5
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -78,9 +74,10 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _WindStrength: 0.5
+    - _WindStrength: 1
     - _ZWrite: 1
     m_Colors:
+    - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

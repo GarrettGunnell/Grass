@@ -546,12 +546,34 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1422709744}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 47134b66cbe681642a7512dbacbf9aec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   resolution: 300
   scale: 2
+  displacementStrength: 0
   grassMaterial: {fileID: 2100000, guid: 5db16e570f58b294ba71dd3f4ebce284, type: 2}
   grassMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
+  updateGrass: 0
+--- !u!114 &1422709757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422709744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7f78c55bd4018c4b9e9b7844f315113, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resolution: 200
+  scale: 2
+  displacementStrength: 0
+  grassMaterial: {fileID: 2100000, guid: 4b2d534b19470a54b8a2dad8062c0e1c, type: 2}
+  grassMesh: {fileID: 7629811779324647873, guid: bce973a2c56c42046b437e28ac8b3f2b, type: 3}
+  heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
+  updateGrass: 0
