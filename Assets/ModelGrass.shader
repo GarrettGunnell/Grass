@@ -1,7 +1,9 @@
 Shader "Unlit/ModelGrass" {
     Properties {
-        _Albedo ("Albedo", Color) = (1, 1, 1)
+        _Albedo1 ("Albedo 1", Color) = (1, 1, 1)
+        _Albedo2 ("Albedo 2", Color) = (1, 1, 1)
         _AOColor ("Ambient Occlusion", Color) = (1, 1, 1)
+        _TipColor ("Tip Color", Color) = (1, 1, 1)
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
         _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
         _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
@@ -30,7 +32,6 @@ Shader "Unlit/ModelGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float saturationLevel : TEXCOORD1;
             };
 
             struct GrassData {
@@ -38,7 +39,7 @@ Shader "Unlit/ModelGrass" {
                 float displacement;
             };
 
-            float4 _Albedo, _AOColor;
+            float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
             float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
 
@@ -86,32 +87,30 @@ Shader "Unlit/ModelGrass" {
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
-                //localPosition.xz += grassPosition.w * v.uv.y * animationDirection.xz + float2(1.0f, 1.0f);
+                //localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection.xz + float2(1.0f, 1.0f);
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
                 worldPosition.y -= positionBuffer[instanceID].displacement;
-                worldPosition.y *= 1.0f + 0.5f * positionBuffer[instanceID].position.w;
+                worldPosition.y *= 1.0f + positionBuffer[instanceID].position.w;
                 
                 worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = v.uv;
-                o.saturationLevel = 1.0 - ((positionBuffer[instanceID].position.w - 1.0f) / 1.5f);
-                o.saturationLevel = min(o.saturationLevel, 0.2f);
                 
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target {
-                float4 col = _Albedo;
+                float4 col = lerp(_Albedo1, _Albedo2, i.uv.y);
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
 
-                float saturation = lerp(1.0f, i.saturationLevel, i.uv.y * i.uv.y);
-                col.r /= saturation;
-
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
+                float4 tip = lerp(1.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
+
+                col /= tip;
                 
                 return col * ndotl * ao;
             }
