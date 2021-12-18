@@ -87,7 +87,7 @@ Shader "Unlit/ModelGrass" {
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
-                //localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection.xz + float2(1.0f, 1.0f);
+                localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection.xz;
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
@@ -108,11 +108,9 @@ Shader "Unlit/ModelGrass" {
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
 
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
-                float4 tip = lerp(1.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
+                float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
 
-                col /= tip;
-                
-                return col * ndotl * ao;
+                return (col + tip) * ndotl * ao;
             }
 
             ENDCG

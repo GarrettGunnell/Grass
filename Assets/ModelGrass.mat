@@ -77,8 +77,11 @@ Material:
     - _WindStrength: 1.5
     - _ZWrite: 1
     m_Colors:
-    - _AOColor: {r: 0.41728458, g: 0.49056602, b: 0.38643643, a: 1}
+    - _AOColor: {r: 0.27467003, g: 0.3962264, b: 0.22988608, a: 1}
     - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
+    - _Albedo1: {r: 0.44705886, g: 0.98039216, b: 0.87471503, a: 1}
+    - _Albedo2: {r: 1, g: 0.90715, b: 0.759434, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _TipColor: {r: 1, g: 0.808726, b: 0.79607844, a: 1}
   m_BuildTextureStacks: []
