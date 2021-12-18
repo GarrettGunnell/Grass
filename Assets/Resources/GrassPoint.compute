@@ -4,6 +4,7 @@
 
 struct GrassData {
     float4 position;
+    float2 uv;
     float displacement;
 };
 
@@ -40,6 +41,7 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
 
         grass.position = pos;
         grass.displacement = displacement.r * _DisplacementStrength;
+        grass.uv = uv;
 
         _GrassDataBuffer[id.x + id.y * _Dimension] = grass;
     }

@@ -36,6 +36,7 @@ Shader "Unlit/ModelGrass" {
 
             struct GrassData {
                 float4 position;
+                float2 uv;
                 float displacement;
             };
 
@@ -98,7 +99,7 @@ Shader "Unlit/ModelGrass" {
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = v.uv;
-                
+
                 return o;
             }
 

@@ -18,13 +18,14 @@ public class BillboardGrass : MonoBehaviour {
 
     private struct GrassData {
         public Vector4 position;
+        public Vector2 uv;
         public float displacement;
     }
 
     void Start() {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
-        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 5);
+        grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 7);
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         updateGrassBuffer();
