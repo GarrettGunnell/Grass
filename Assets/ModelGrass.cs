@@ -12,8 +12,10 @@ public class ModelGrass : MonoBehaviour {
 
     public bool updateGrass;
 
-    private ComputeShader initializeGrassShader;
+    private ComputeShader initializeGrassShader, generateWindShader;
     private ComputeBuffer grassDataBuffer, argsBuffer;
+
+    private RenderTexture wind;
 
     private struct GrassData {
         public Vector4 position;
@@ -21,11 +23,16 @@ public class ModelGrass : MonoBehaviour {
         public float displacement;
     }
 
-    void Start() {
+    void OnEnable() {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
+        generateWindShader = Resources.Load<ComputeShader>("WindNoise");
         grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 7);
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+
+        wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        wind.enableRandomWrite = true;
+        wind.Create();
 
         updateGrassBuffer();
     }
@@ -47,9 +54,13 @@ public class ModelGrass : MonoBehaviour {
         args[3] = (uint)grassMesh.GetBaseVertex(0);
         argsBuffer.SetData(args);
 
+        generateWindShader.SetTexture(0, "_WindMap", wind);
+        generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
+
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
         grassMaterial.SetFloat("_Rotation", 0.0f);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
+        grassMaterial.SetTexture("_WindTex", wind);
     }
 
     void Update() {
@@ -67,7 +78,9 @@ public class ModelGrass : MonoBehaviour {
     void OnDisable() {
         grassDataBuffer.Release();
         argsBuffer.Release();
+        wind.Release();
         grassDataBuffer = null;
         argsBuffer = null;
+        wind = null;
     }
 }

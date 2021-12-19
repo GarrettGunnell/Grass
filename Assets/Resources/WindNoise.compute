@@ -8,5 +8,5 @@ float _Frequency, _Time;
 
 [numthreads(8,8,1)]
 void WindNoise(uint3 id : SV_DispatchThreadID) {
-    Result[id.xy] = snoise((id + _Time) * _Frequency);
+    _WindMap[id.xy] = snoise((id + _Time) * _Frequency);
 }

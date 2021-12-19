@@ -40,6 +40,7 @@ Shader "Unlit/ModelGrass" {
                 float displacement;
             };
 
+            sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
             float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
@@ -87,7 +88,8 @@ Shader "Unlit/ModelGrass" {
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
-                localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection.xz;
+                float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
+                localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection * tex2Dlod(_WindTex, worldUV);
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
