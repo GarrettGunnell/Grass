@@ -77,7 +77,6 @@ Shader "Unlit/ModelGrass" {
             v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
                 v2f o;
             
-                
                 float idHash = randValue(instanceID);
 
                 float4 animationDirection = float4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -94,7 +93,6 @@ Shader "Unlit/ModelGrass" {
 
                 worldPosition.y -= positionBuffer[instanceID].displacement;
                 worldPosition.y *= 1.0f + positionBuffer[instanceID].position.w;
-                
                 worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
