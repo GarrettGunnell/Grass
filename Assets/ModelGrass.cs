@@ -53,20 +53,28 @@ public class ModelGrass : MonoBehaviour {
         args[2] = (uint)grassMesh.GetIndexStart(0);
         args[3] = (uint)grassMesh.GetBaseVertex(0);
         argsBuffer.SetData(args);
-
-        generateWindShader.SetTexture(0, "_WindMap", wind);
-        generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
+        
+        GenerateWind();
 
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
-        grassMaterial.SetFloat("_Rotation", 0.0f);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
     }
 
-    void Update() {
+    void GenerateWind() {
+        generateWindShader.SetTexture(0, "_WindMap", wind);
+        generateWindShader.SetFloat("_Time", Time.time);
+        generateWindShader.SetFloat("_Frequency", 1.0f);
+        generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
+    }
+
+    void Update() {      
+        GenerateWind();
+
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
-        grassMaterial.SetFloat("_Rotation", 0.0f);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
+        grassMaterial.SetTexture("_WindTex", wind);
+
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
 
         if (updateGrass) {

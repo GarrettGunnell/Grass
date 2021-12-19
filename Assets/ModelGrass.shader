@@ -43,7 +43,7 @@ Shader "Unlit/ModelGrass" {
             sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
-            float _Rotation, _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
+            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
