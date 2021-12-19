@@ -22,8 +22,8 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
         float4 pos = 0.0f;
         pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
 
-        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.1f;
-        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.1f;
+        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.05f;
+        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.05f;
 
         float2 uv = pos.xz;
         uv = (id.xy) * (1.0f / float(_Scale));

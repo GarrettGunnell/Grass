@@ -15,7 +15,7 @@ public class ModelGrass : MonoBehaviour {
     [Header("Wind")]
     public float windSpeed = 1.0f;
     public float frequency = 1.0f;
-
+    public float windStrength = 1.0f;
 
     private ComputeShader initializeGrassShader, generateWindShader;
     private ComputeBuffer grassDataBuffer, argsBuffer;
@@ -70,6 +70,7 @@ public class ModelGrass : MonoBehaviour {
         generateWindShader.SetTexture(0, "_WindMap", wind);
         generateWindShader.SetFloat("_Time", Time.time * windSpeed);
         generateWindShader.SetFloat("_Frequency", frequency);
+        generateWindShader.SetFloat("_Amplitude", windStrength);
         generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
     }
 

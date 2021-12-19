@@ -79,9 +79,10 @@ Shader "Unlit/ModelGrass" {
                 v2f o;
             
                 float idHash = randValue(instanceID);
+                idHash = randValue(idHash * 100000);
 
                 float4 animationDirection = float4(0.0f, 0.0f, 1.0f, 0.0f);
-                animationDirection = normalize(RotateAroundYInDegrees(animationDirection, idHash * 90.0f));
+                animationDirection = normalize(RotateAroundYInDegrees(animationDirection, idHash * 180.0f));
 
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
                 localPosition = RotateAroundYInDegrees(localPosition, idHash * 90.0f);
@@ -89,8 +90,10 @@ Shader "Unlit/ModelGrass" {
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
                 float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
-
-                float movement = grassPosition.w * v.uv.y * tex2Dlod(_WindTex, worldUV).r;
+                
+                float swayVariance = lerp(0.8, 1.0, idHash);
+                float movement = v.uv.y * v.uv.y * v.uv.y * tex2Dlod(_WindTex, worldUV).r;
+                movement *= swayVariance;
                 
                 localPosition.x += movement * animationDirection.x;
                 localPosition.z += movement * animationDirection.y;
