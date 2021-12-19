@@ -5,6 +5,7 @@ Shader "Unlit/ModelGrass" {
         _AOColor ("Ambient Occlusion", Color) = (1, 1, 1)
         _TipColor ("Tip Color", Color) = (1, 1, 1)
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
+        _Scale ("Scale", Range(0.0, 2.0)) = 0.0
         _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
         _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
     }
@@ -44,7 +45,7 @@ Shader "Unlit/ModelGrass" {
             sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
-            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff;
+            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff, _Scale;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -87,6 +88,7 @@ Shader "Unlit/ModelGrass" {
 
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
                 localPosition = RotateAroundYInDegrees(localPosition, idHash * 90.0f);
+                localPosition += _Scale * v.uv.y * v.uv.y * v.uv.y;
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
@@ -120,7 +122,7 @@ Shader "Unlit/ModelGrass" {
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
                 float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
 
-                return i.noiseVal;
+                //return i.noiseVal;
                 return (col + tip) * ndotl * ao;
             }
 
