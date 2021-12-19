@@ -32,6 +32,7 @@ Shader "Unlit/ModelGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float noiseVal : TEXCOORD1;
             };
 
             struct GrassData {
@@ -106,6 +107,7 @@ Shader "Unlit/ModelGrass" {
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
                 o.uv = v.uv;
+                o.noiseVal = tex2Dlod(_WindTex, worldUV).r;
 
                 return o;
             }
@@ -118,6 +120,7 @@ Shader "Unlit/ModelGrass" {
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
                 float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
 
+                return i.noiseVal;
                 return (col + tip) * ndotl * ao;
             }
 

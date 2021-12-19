@@ -8,16 +8,8 @@ float _Frequency, _Time, _Amplitude;
 
 [numthreads(8,8,1)]
 void WindNoise(uint3 id : SV_DispatchThreadID) {
-    float n;
-    float amplitude = _Amplitude;
-    float frequency = _Frequency;
 
-    for (int i = 0; i < 16; ++i) {
-        float noise = snoise((id + _Time) * frequency);
-        n += noise * amplitude;
+    float sineValue = sin(id.x + id.y);
 
-        amplitude *= exp2(-0.5f);
-    }
-    
-    _WindMap[id.xy] = n;
+    _WindMap[id.xy] = sineValue;
 }
