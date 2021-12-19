@@ -89,7 +89,11 @@ Shader "Unlit/ModelGrass" {
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
                 float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
-                localPosition.xz += grassPosition.w * v.uv.y * v.uv.y * animationDirection * tex2Dlod(_WindTex, worldUV);
+
+                float movement = grassPosition.w * v.uv.y * tex2Dlod(_WindTex, worldUV).r;
+                
+                localPosition.x += movement * animationDirection.x;
+                localPosition.z += movement * animationDirection.y;
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
