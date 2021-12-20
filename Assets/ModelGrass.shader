@@ -6,6 +6,7 @@ Shader "Unlit/ModelGrass" {
         _TipColor ("Tip Color", Color) = (1, 1, 1)
         _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
         _Scale ("Scale", Range(0.0, 2.0)) = 0.0
+        _Droop ("Droop", Range(0.0, 10.0)) = 0.0
         _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
         _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
     }
@@ -45,7 +46,7 @@ Shader "Unlit/ModelGrass" {
             sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
-            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff, _Scale;
+            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff, _Scale, _Droop;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -87,15 +88,16 @@ Shader "Unlit/ModelGrass" {
                 animationDirection = normalize(RotateAroundYInDegrees(animationDirection, idHash * 180.0f));
 
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
-                localPosition = RotateAroundYInDegrees(localPosition, idHash * 90.0f);
+                localPosition = RotateAroundYInDegrees(localPosition, idHash * 180.0f);
                 localPosition += _Scale * v.uv.y * v.uv.y * v.uv.y;
+                //localPosition.xz += _Droop * v.uv.y * v.uv.y * v.uv.y * animationDirection;
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
                 float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
                 
                 float swayVariance = lerp(0.8, 1.0, idHash);
-                float movement = v.uv.y * v.uv.y * v.uv.y * tex2Dlod(_WindTex, worldUV).r;
+                float movement = v.uv.y * v.uv.y * v.uv.y * (tex2Dlod(_WindTex, worldUV).r - _Droop);
                 movement *= swayVariance;
                 
                 localPosition.x += movement * animationDirection.x;
