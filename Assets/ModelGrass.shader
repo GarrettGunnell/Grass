@@ -46,6 +46,7 @@ Shader "Unlit/ModelGrass" {
             sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
+            StructuredBuffer<bool> voteBuffer;
             float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff, _Scale, _Droop;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
@@ -64,20 +65,6 @@ Shader "Unlit/ModelGrass" {
                 return float4(mul(m, vertex.yz), vertex.xw).zxyw;
             }
 
-            bool VertexIsBelowClipPlane(float3 p, int planeIndex, float bias) {
-                float4 plane = unity_CameraWorldClipPlanes[planeIndex];
-
-                return dot(float4(p, 1), plane) < bias;
-            }   
-
-            bool cullVertex(float3 p, float bias) {
-                return  distance(_WorldSpaceCameraPos, p) > _LODCutoff ||
-                        VertexIsBelowClipPlane(p, 0, bias) ||
-                        VertexIsBelowClipPlane(p, 1, bias) ||
-                        VertexIsBelowClipPlane(p, 2, bias) ||
-                        VertexIsBelowClipPlane(p, 3, -max(1.0f, _DisplacementStrength));
-            }
-
             v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
                 v2f o;
             
@@ -90,7 +77,6 @@ Shader "Unlit/ModelGrass" {
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
                 localPosition = RotateAroundYInDegrees(localPosition, idHash * 180.0f);
                 localPosition += _Scale * v.uv.y * v.uv.y * v.uv.y;
-                //localPosition.xz += _Droop * v.uv.y * v.uv.y * v.uv.y * animationDirection;
 
                 float4 grassPosition = positionBuffer[instanceID].position;
                 
@@ -110,6 +96,10 @@ Shader "Unlit/ModelGrass" {
                 worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
+                /*
+                if (voteBuffer[instanceID] == 0)
+                    o.vertex = 0;
+                */
                 o.uv = v.uv;
                 o.noiseVal = tex2Dlod(_WindTex, worldUV).r;
 

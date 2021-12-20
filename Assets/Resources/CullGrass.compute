@@ -1,0 +1,28 @@
+#pragma kernel Vote
+
+struct GrassData {
+    float4 position;
+    float2 uv;
+    float displacement;
+};
+
+RWStructuredBuffer<GrassData> _GrassDataBuffer;
+RWStructuredBuffer<bool> _GrassVoteBuffer;
+
+float4x4 MATRIX_VP;
+
+[numthreads(128,1,1)]
+void Vote(uint3 id : SV_DispatchThreadID) {
+    float4 position = float4(_GrassDataBuffer[id.x].position.xyz, 1.0f);
+    
+    float4 viewspace = mul(MATRIX_VP, position);
+
+    float3 clipspace = viewspace.xyz;
+    clipspace /= -viewspace.w;
+
+    clipspace.x = clipspace.x / 2.0f + 0.5f;
+    clipspace.y = clipspace.y / 2.0f + 0.5f;
+    clipspace.z = -viewspace.w;
+
+    _GrassVoteBuffer[id.x] = clipspace.x < - 0.05f || clipspace.x > 1.05f || clipspace.z <= -0.05f ? 0 : 1;
+}

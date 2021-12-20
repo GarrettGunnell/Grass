@@ -17,8 +17,8 @@ public class ModelGrass : MonoBehaviour {
     public float frequency = 1.0f;
     public float windStrength = 1.0f;
 
-    private ComputeShader initializeGrassShader, generateWindShader;
-    private ComputeBuffer grassDataBuffer, argsBuffer;
+    private ComputeShader initializeGrassShader, generateWindShader, cullGrassShader;
+    private ComputeBuffer grassDataBuffer, grassVoteBuffer, argsBuffer;
 
     private RenderTexture wind;
 
@@ -32,7 +32,10 @@ public class ModelGrass : MonoBehaviour {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
+        cullGrassShader = Resources.Load<ComputeShader>("CullGrass");
+
         grassDataBuffer = new ComputeBuffer(resolution * resolution, 4 * 7);
+        grassVoteBuffer = new ComputeBuffer(resolution * resolution, 4);
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -43,12 +46,22 @@ public class ModelGrass : MonoBehaviour {
     }
 
     void updateGrassBuffer() {
+        Matrix4x4 P = Camera.main.projectionMatrix;
+        Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
+        Matrix4x4 VP = P * V;
+
+
         initializeGrassShader.SetInt("_Dimension", resolution);
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt(resolution / 8.0f), Mathf.CeilToInt(resolution / 8.0f), 1);
+
+        cullGrassShader.SetMatrix("MATRIX_VP", VP);
+        cullGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
+        cullGrassShader.SetBuffer(0, "_GrassVoteBuffer", grassVoteBuffer);
+        cullGrassShader.Dispatch(0, Mathf.CeilToInt((resolution * resolution) / 128.0f), 1, 1);
 
         uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
         // Arguments for drawing mesh.
@@ -78,6 +91,7 @@ public class ModelGrass : MonoBehaviour {
         GenerateWind();
 
         grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial.SetBuffer("voteBuffer", grassVoteBuffer);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
 
@@ -92,9 +106,11 @@ public class ModelGrass : MonoBehaviour {
     void OnDisable() {
         grassDataBuffer.Release();
         argsBuffer.Release();
+        grassVoteBuffer.Release();
         wind.Release();
         grassDataBuffer = null;
         argsBuffer = null;
         wind = null;
+        grassVoteBuffer = null;
     }
 }

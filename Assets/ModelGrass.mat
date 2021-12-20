@@ -61,6 +61,7 @@ Material:
     - _CullingBias: 0.394
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
+    - _Droop: 0.5
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -70,6 +71,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Scale: 0.4
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -77,11 +79,11 @@ Material:
     - _WindStrength: 1.5
     - _ZWrite: 1
     m_Colors:
-    - _AOColor: {r: 0.27467003, g: 0.3962264, b: 0.22988608, a: 1}
+    - _AOColor: {r: 0.2518977, g: 0.3773585, b: 0.20825917, a: 1}
     - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
-    - _Albedo1: {r: 0.44705886, g: 0.98039216, b: 0.87471503, a: 1}
+    - _Albedo1: {r: 0.12019401, g: 0.6886792, b: 0.17234881, a: 1}
     - _Albedo2: {r: 1, g: 0.90715, b: 0.759434, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _TipColor: {r: 1, g: 0.808726, b: 0.79607844, a: 1}
+    - _TipColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
