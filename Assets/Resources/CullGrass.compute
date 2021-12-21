@@ -137,7 +137,7 @@ void ScanGroupSums(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPIND
     _GroupSumArrayOut[2 * tid + 1] = temp[2 * tid + 1];
 }
 
-[numthreads(NUM_THREAD_GROUPS_X, 1, 1)]
+[numthreads(128, 1, 1)]
 void Compact(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3 _groupID : SV_GROUPID, uint3 groupThreadID : SV_GROUPTHREADID) {
     uint tid = id.x;
     uint groupID = _groupID.x;

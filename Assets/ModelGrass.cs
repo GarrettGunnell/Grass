@@ -24,7 +24,7 @@ public class ModelGrass : MonoBehaviour {
 
     private RenderTexture wind;
 
-    private int numInstances;
+    private int numInstances, numGroups;
 
     private struct GrassData {
         public Vector4 position;
@@ -35,8 +35,10 @@ public class ModelGrass : MonoBehaviour {
     void OnEnable() {
         numInstances = resolution * scale;
         numInstances *= numInstances;
-        Debug.Log("NumInstances:");
-        Debug.Log(numInstances);
+        Debug.Log("NumInstances: " + numInstances.ToString());
+
+        numGroups = numInstances / 128;
+        Debug.Log("NumGroups: " + numGroups.ToString());
 
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
@@ -45,8 +47,8 @@ public class ModelGrass : MonoBehaviour {
         grassDataBuffer = new ComputeBuffer(numInstances, 4 * 7);
         grassVoteBuffer = new ComputeBuffer(numInstances, 4);
         grassScanBuffer = new ComputeBuffer(numInstances, 4);
-        groupSumArrayBuffer = new ComputeBuffer(numInstances, 4);
-        scannedGroupSumBuffer = new ComputeBuffer(numInstances, 4);
+        groupSumArrayBuffer = new ComputeBuffer(numGroups, 4);
+        scannedGroupSumBuffer = new ComputeBuffer(numGroups, 4);
         culledGrassOutputBuffer = new ComputeBuffer(numInstances, 4 * 7);
 
         compactedGrassIndicesBuffer = new ComputeBuffer(numInstances, 4);
@@ -58,11 +60,11 @@ public class ModelGrass : MonoBehaviour {
         wind.Create();
 
         updateGrassBuffer();
+        
+        uint[] computedata = new uint[numGroups];
+        scannedGroupSumBuffer.GetData(computedata);
 
-        uint[] computedata = new uint[numInstances];
-        groupSumArrayBuffer.GetData(computedata);
-
-        for (int i = 0; i < numInstances; ++i) {
+        for (int i = 0; i < numGroups; ++i) {
             Debug.Log(computedata[i]);
         }
     }
@@ -76,7 +78,7 @@ public class ModelGrass : MonoBehaviour {
         // Arguments for drawing mesh.
         // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
         args[0] = (uint)grassMesh.GetIndexCount(0);
-        args[1] = (uint)numInstances;
+        args[1] = (uint)0;
         args[2] = (uint)grassMesh.GetIndexStart(0);
         args[3] = (uint)grassMesh.GetBaseVertex(0);
         argsBuffer.SetData(args);
@@ -103,7 +105,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.Dispatch(1, threadGroupSizeX, 1, 1);
 
         // Scan Groups
-        cullGrassShader.SetInt("_NumOfGroups", numInstances / (128));
+        cullGrassShader.SetInt("_NumOfGroups", numGroups);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayIn", groupSumArrayBuffer);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayOut", scannedGroupSumBuffer);
         cullGrassShader.Dispatch(2, threadGroupSizeX, 1, 1);
