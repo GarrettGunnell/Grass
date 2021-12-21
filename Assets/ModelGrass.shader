@@ -67,8 +67,9 @@ Shader "Unlit/ModelGrass" {
 
             v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
                 v2f o;
-            
-                float idHash = randValue(instanceID);
+                float4 grassPosition = positionBuffer[instanceID].position;
+
+                float idHash = randValue(abs(grassPosition.x * 10000 + grassPosition.y * 100 + grassPosition.z * 0.05f));
                 idHash = randValue(idHash * 100000);
 
                 float4 animationDirection = float4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -77,8 +78,6 @@ Shader "Unlit/ModelGrass" {
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
                 localPosition = RotateAroundYInDegrees(localPosition, idHash * 180.0f);
                 localPosition += _Scale * v.uv.y * v.uv.y * v.uv.y;
-
-                float4 grassPosition = positionBuffer[instanceID].position;
                 
                 float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
                 
