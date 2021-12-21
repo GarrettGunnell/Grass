@@ -10,6 +10,7 @@ DISCLAIMER: This code is far from production ready, please do not attempt to use
 
 * GPU Instancing
 * GPU Frustum Culling
+* Scrolling noise texture to simulate wind
 * Shaders for quad grass and individual grass blade 3d models
 
 # TO DO:
@@ -18,6 +19,8 @@ DISCLAIMER: This code is far from production ready, please do not attempt to use
 * Expansion of prefix scan algorithm to allow for more than 2 ^ 18 elements.
 
 ## Quad Grass
+
+Implementation details [here](https://www.youtube.com/watch?v=Y0Ko0kvwfgA).
 
 ![example](./example.png)
 
