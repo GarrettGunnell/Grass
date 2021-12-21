@@ -69,7 +69,7 @@ Shader "Unlit/ModelGrass" {
                 v2f o;
                 float4 grassPosition = positionBuffer[instanceID].position;
 
-                float idHash = randValue(abs(grassPosition.x * 10000 + grassPosition.y * 100 + grassPosition.z * 0.05f));
+                float idHash = randValue(abs(grassPosition.x * 10000 + grassPosition.y * 100 + grassPosition.z * 0.05f + 2));
                 idHash = randValue(idHash * 100000);
 
                 float4 animationDirection = float4(0.0f, 0.0f, 1.0f, 0.0f);

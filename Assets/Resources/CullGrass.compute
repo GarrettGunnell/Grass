@@ -40,7 +40,7 @@ void Vote(uint3 id : SV_DispatchThreadID) {
     clipspace.y = clipspace.y / 2.0f + 0.5f;
     clipspace.z = -viewspace.w;
 
-    _GrassVoteBuffer[id.x] = clipspace.x < -0.05f || clipspace.x > 1.05f || clipspace.z <= -0.05f ? 0 : 1;
+    _GrassVoteBuffer[id.x] = clipspace.x < -0.2f || clipspace.x > 1.2f || clipspace.z <= -0.1f ? 0 : 1;
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
