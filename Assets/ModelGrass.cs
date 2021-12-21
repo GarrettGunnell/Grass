@@ -43,6 +43,16 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
         cullGrassShader = Resources.Load<ComputeShader>("CullGrass");
+        
+        argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
+        // Arguments for drawing mesh.
+        // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
+        args[0] = (uint)grassMesh.GetIndexCount(0);
+        args[1] = (uint)0;
+        args[2] = (uint)grassMesh.GetIndexStart(0);
+        args[3] = (uint)grassMesh.GetBaseVertex(0);
+        argsBuffer.SetData(args);
 
         grassDataBuffer = new ComputeBuffer(numInstances, 4 * 7);
         grassVoteBuffer = new ComputeBuffer(numInstances, 4);
@@ -52,8 +62,6 @@ public class ModelGrass : MonoBehaviour {
         culledGrassOutputBuffer = new ComputeBuffer(numInstances, 4 * 7);
 
         compactedGrassIndicesBuffer = new ComputeBuffer(numInstances, 4);
-
-        argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
@@ -70,27 +78,31 @@ public class ModelGrass : MonoBehaviour {
     }
 
     void updateGrassBuffer() {
-        Matrix4x4 P = Camera.main.projectionMatrix;
-        Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
-        Matrix4x4 VP = P * V;
-
-        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-        // Arguments for drawing mesh.
-        // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
-        args[0] = (uint)grassMesh.GetIndexCount(0);
-        args[1] = (uint)0;
-        args[2] = (uint)grassMesh.GetIndexStart(0);
-        args[3] = (uint)grassMesh.GetBaseVertex(0);
-        argsBuffer.SetData(args);
-
         initializeGrassShader.SetInt("_Dimension", resolution * scale);
         initializeGrassShader.SetInt("_Scale", scale);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt((resolution * scale) / 8.0f), Mathf.CeilToInt((resolution * scale) / 8.0f), 1);
+        
+        CullGrass();
+        GenerateWind();
+
+        grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
+        grassMaterial.SetTexture("_WindTex", wind);
+    }
+
+    void CullGrass() {        
+        Matrix4x4 P = Camera.main.projectionMatrix;
+        Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
+        Matrix4x4 VP = P * V;
 
         int threadGroupSizeX = Mathf.CeilToInt(numInstances / 128.0f);
+
+        //Reset Args
+        cullGrassShader.SetBuffer(4, "_ArgsBuffer", argsBuffer);
+        cullGrassShader.Dispatch(4, 1, 1, 1);
 
         // Vote
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
@@ -119,12 +131,6 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetBuffer(3, "_GroupSumArray", scannedGroupSumBuffer);
         cullGrassShader.SetBuffer(3, "_CompactedIndicesBuffer", compactedGrassIndicesBuffer);
         cullGrassShader.Dispatch(3, threadGroupSizeX, 1, 1);
-        
-        GenerateWind();
-
-        grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
-        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
-        grassMaterial.SetTexture("_WindTex", wind);
     }
 
     void GenerateWind() {
@@ -136,6 +142,7 @@ public class ModelGrass : MonoBehaviour {
     }
 
     void Update() {      
+        CullGrass();
         GenerateWind();
 
         grassMaterial.SetBuffer("positionBuffer", culledGrassOutputBuffer);
