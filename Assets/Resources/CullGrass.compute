@@ -1,5 +1,10 @@
 #pragma kernel Vote
 #pragma kernel Scan
+#pragma kernel ScanGroupSums
+#pragma kernel Compact
+#pragma kernel ResetArgs
+
+#define NUM_THREAD_GROUPS_X 64
 
 struct GrassData {
     float4 position;
@@ -7,17 +12,21 @@ struct GrassData {
     float displacement;
 };
 
-cbuffer CB {
-    groupshared uint temp[2 * 128];
-}
-
 RWStructuredBuffer<GrassData> _GrassDataBuffer;
-RWStructuredBuffer<bool> _GrassVoteBuffer;
+RWStructuredBuffer<uint> _GrassVoteBuffer;
 RWStructuredBuffer<uint> _GrassScanBuffer;
+RWStructuredBuffer<uint> _GroupSumArray;
+RWStructuredBuffer<GrassData> _CulledGrassOutputBuffer;
+RWStructuredBuffer<uint> _GroupSumArrayIn;
+RWStructuredBuffer<uint> _GroupSumArrayOut;
+RWStructuredBuffer<uint> _ArgsBuffer;
+RWStructuredBuffer<uint> _CompactedIndicesBuffer;
 
 float4x4 MATRIX_VP;
+int _NumOfGroups;
+groupshared uint temp[2 * NUM_THREAD_GROUPS_X];
 
-[numthreads(128,1,1)]
+[numthreads(128, 1, 1)]
 void Vote(uint3 id : SV_DispatchThreadID) {
     float4 position = float4(_GrassDataBuffer[id.x].position.xyz, 1.0f);
     
@@ -30,11 +39,11 @@ void Vote(uint3 id : SV_DispatchThreadID) {
     clipspace.y = clipspace.y / 2.0f + 0.5f;
     clipspace.z = -viewspace.w;
 
-    _GrassVoteBuffer[id.x] = clipspace.x < - 0.05f || clipspace.x > 1.05f || clipspace.z <= -0.05f ? 0 : 1;
+    _GrassVoteBuffer[id.x] = clipspace.x < -0.05f || clipspace.x > 1.05f || clipspace.z <= -0.05f ? 0 : 1;
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
-[numthreads(128, 1, 1)]
+[numthreads(NUM_THREAD_GROUPS_X, 1, 1)]
 void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3 _groupID : SV_GROUPID, uint3 groupThreadID : SV_GROUPTHREADID) {
     int tid = (int) id.x;
     int groupTID = (int) groupThreadID.x;
@@ -44,7 +53,7 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
     temp[2 * groupTID] = _GrassVoteBuffer[2 * tid];
     temp[2 * groupTID + 1] = _GrassVoteBuffer[2 * tid + 1];
     int d;
-    int numElements = 2 * 128;
+    int numElements = 2 * NUM_THREAD_GROUPS_X;
 
     for (d = numElements >> 1; d > 0; d >>= 1) {
         GroupMemoryBarrierWithGroupSync();
@@ -58,8 +67,10 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
         offset *= 2;
     }
 
-    if (groupTID == 0)
+    if (groupTID == 0) {
+        _GroupSumArray[_groupID.x] = temp[numElements - 1];
         temp[numElements - 1] = 0;
+    }
 
     for (d = 1; d < numElements; d *= 2) {
         offset >>= 1;
@@ -78,4 +89,69 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
 
     _GrassScanBuffer[2 * tid] = temp[2 * groupTID];
     _GrassScanBuffer[2 * tid + 1] = temp[2 * groupTID + 1];
+}
+
+// From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
+[numthreads(NUM_THREAD_GROUPS_X, 1, 1)]
+void ScanGroupSums(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3 _groupID : SV_GROUPID, uint3 groupThreadID : SV_GROUPTHREADID) {
+    int tid = (int) id.x;
+    int groupTID = (int) groupThreadID.x;
+    int groupID = (int) _groupID.x;
+
+    int offset = 1;
+    temp[2 * groupTID] = _GroupSumArrayIn[2 * tid];
+    temp[2 * groupTID + 1] = _GroupSumArrayIn[2 * tid + 1];
+    int d;
+
+    for (d = _NumOfGroups >> 1; d > 0; d >>= 1) {
+        GroupMemoryBarrierWithGroupSync();
+
+        if (groupTID < d) {
+            int ai = offset * (2 * groupTID + 1) - 1;
+            int bi = offset * (2 * groupTID + 2) - 1;
+            temp[bi] += temp[ai];
+        }
+
+        offset *= 2;
+    }
+
+    if (tid == 0)
+        temp[_NumOfGroups - 1] = 0;
+
+    for (d = 1; d < _NumOfGroups; d *= 2) {
+        offset >>= 1;
+
+        GroupMemoryBarrierWithGroupSync();
+        if (tid < d) {
+            int ai = offset * (2 * groupTID + 1) - 1;
+            int bi = offset * (2 * groupTID + 2) - 1;
+            int t = temp[ai];
+            temp[ai] = temp[bi];
+            temp[bi] += t;
+        }
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+
+    _GroupSumArrayOut[2 * tid] = temp[2 * tid];
+    _GroupSumArrayOut[2 * tid + 1] = temp[2 * tid + 1];
+}
+
+[numthreads(NUM_THREAD_GROUPS_X, 1, 1)]
+void Compact(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3 _groupID : SV_GROUPID, uint3 groupThreadID : SV_GROUPTHREADID) {
+    uint tid = id.x;
+    uint groupID = _groupID.x;
+    uint groupSum = groupID.x > 0 ? _GroupSumArray[groupID.x] : 0;
+    bool inCamera = _GrassVoteBuffer[id.x];
+
+    if (inCamera == 1) {
+        InterlockedAdd(_ArgsBuffer[1], 1);
+        _CompactedIndicesBuffer[tid] = _GrassScanBuffer[tid] + groupSum;
+        _CulledGrassOutputBuffer[_GrassScanBuffer[tid] + groupSum] = _GrassDataBuffer[tid];
+    }
+}
+
+[numthreads(1, 1, 1)]
+void ResetArgs(uint3 id : SV_DISPATCHTHREADID) {
+    _ArgsBuffer[1] = (uint)0;
 }
