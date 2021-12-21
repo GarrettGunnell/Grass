@@ -60,13 +60,13 @@ public class ModelGrass : MonoBehaviour {
         wind.Create();
 
         updateGrassBuffer();
-        
+        /*
         uint[] computedata = new uint[numGroups];
         scannedGroupSumBuffer.GetData(computedata);
 
         for (int i = 0; i < numGroups; ++i) {
             Debug.Log(computedata[i]);
-        }
+        }*/
     }
 
     void updateGrassBuffer() {
@@ -108,7 +108,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetInt("_NumOfGroups", numGroups);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayIn", groupSumArrayBuffer);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayOut", scannedGroupSumBuffer);
-        cullGrassShader.Dispatch(2, threadGroupSizeX, 1, 1);
+        cullGrassShader.Dispatch(2, Mathf.CeilToInt(numInstances / 1024), 1, 1);
 
         // Compact
         cullGrassShader.SetBuffer(3, "_GrassDataBuffer", grassDataBuffer);

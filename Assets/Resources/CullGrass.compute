@@ -25,6 +25,7 @@ RWStructuredBuffer<uint> _CompactedIndicesBuffer;
 float4x4 MATRIX_VP;
 int _NumOfGroups;
 groupshared uint temp[2 * NUM_THREAD_GROUPS_X];
+groupshared uint grouptemp[2 * 1024];
 
 [numthreads(128, 1, 1)]
 void Vote(uint3 id : SV_DispatchThreadID) {
@@ -92,15 +93,15 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
-[numthreads(NUM_THREAD_GROUPS_X, 1, 1)]
+[numthreads(1024, 1, 1)]
 void ScanGroupSums(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3 _groupID : SV_GROUPID, uint3 groupThreadID : SV_GROUPTHREADID) {
     int tid = (int) id.x;
     int groupTID = (int) groupThreadID.x;
     int groupID = (int) _groupID.x;
 
     int offset = 1;
-    temp[2 * groupTID] = _GroupSumArrayIn[2 * tid];
-    temp[2 * groupTID + 1] = _GroupSumArrayIn[2 * tid + 1];
+    grouptemp[2 * groupTID] = _GroupSumArrayIn[2 * tid];
+    grouptemp[2 * groupTID + 1] = _GroupSumArrayIn[2 * tid + 1];
     int d;
 
     for (d = _NumOfGroups >> 1; d > 0; d >>= 1) {
@@ -109,14 +110,14 @@ void ScanGroupSums(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPIND
         if (groupTID < d) {
             int ai = offset * (2 * groupTID + 1) - 1;
             int bi = offset * (2 * groupTID + 2) - 1;
-            temp[bi] += temp[ai];
+            grouptemp[bi] += grouptemp[ai];
         }
 
         offset *= 2;
     }
 
     if (tid == 0)
-        temp[_NumOfGroups - 1] = 0;
+        grouptemp[_NumOfGroups - 1] = 0;
 
     for (d = 1; d < _NumOfGroups; d *= 2) {
         offset >>= 1;
@@ -125,16 +126,16 @@ void ScanGroupSums(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPIND
         if (tid < d) {
             int ai = offset * (2 * groupTID + 1) - 1;
             int bi = offset * (2 * groupTID + 2) - 1;
-            int t = temp[ai];
-            temp[ai] = temp[bi];
-            temp[bi] += t;
+            int t = grouptemp[ai];
+            grouptemp[ai] = grouptemp[bi];
+            grouptemp[bi] += t;
         }
     }
 
     GroupMemoryBarrierWithGroupSync();
 
-    _GroupSumArrayOut[2 * tid] = temp[2 * tid];
-    _GroupSumArrayOut[2 * tid + 1] = temp[2 * tid + 1];
+    _GroupSumArrayOut[2 * tid] = grouptemp[2 * tid];
+    _GroupSumArrayOut[2 * tid + 1] = grouptemp[2 * tid + 1];
 }
 
 [numthreads(128, 1, 1)]
