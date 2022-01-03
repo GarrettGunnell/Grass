@@ -4,11 +4,8 @@ Shader "Unlit/ModelGrass" {
         _Albedo2 ("Albedo 2", Color) = (1, 1, 1)
         _AOColor ("Ambient Occlusion", Color) = (1, 1, 1)
         _TipColor ("Tip Color", Color) = (1, 1, 1)
-        _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
         _Scale ("Scale", Range(0.0, 2.0)) = 0.0
         _Droop ("Droop", Range(0.0, 10.0)) = 0.0
-        _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
-        _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
     }
 
     SubShader {
@@ -47,7 +44,7 @@ Shader "Unlit/ModelGrass" {
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             StructuredBuffer<GrassData> positionBuffer;
             StructuredBuffer<bool> voteBuffer;
-            float _WindStrength, _CullingBias, _DisplacementStrength, _LODCutoff, _Scale, _Droop;
+            float _Scale, _Droop;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
