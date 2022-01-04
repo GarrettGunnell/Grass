@@ -36,7 +36,8 @@ Shader "Unlit/ModelGrass" {
             struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float noiseVal : TEXCOORD1;
+                float4 worldPos : TEXCOORD1;
+                float noiseVal : TEXCOORD2;
             };
 
             struct GrassData {
@@ -103,6 +104,7 @@ Shader "Unlit/ModelGrass" {
                 */
                 o.uv = v.uv;
                 o.noiseVal = tex2Dlod(_WindTex, worldUV).r;
+                o.worldPos = worldPosition;
 
                 return o;
             }
@@ -116,7 +118,16 @@ Shader "Unlit/ModelGrass" {
                 float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
 
                 //return i.noiseVal;
-                return (col + tip) * ndotl * ao;
+
+                float4 grassColor = (col + tip) * ndotl * ao;
+
+                /* Fog */
+                float viewDistance = length(_WorldSpaceCameraPos - i.worldPos);
+                float fogFactor = (0.05f / log(2)) * viewDistance;
+                fogFactor = exp2(-fogFactor);
+
+
+                return lerp(float4(1, 1, 1, 1), grassColor, fogFactor);
             }
 
             ENDCG
