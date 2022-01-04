@@ -6,6 +6,8 @@ Shader "Unlit/ModelGrass" {
         _TipColor ("Tip Color", Color) = (1, 1, 1)
         _Scale ("Scale", Range(0.0, 2.0)) = 0.0
         _Droop ("Droop", Range(0.0, 10.0)) = 0.0
+        _FogColor ("Fog Color", Color) = (1, 1, 1)
+        _FogDensity ("Fog Density", Range(0.0, 1.0)) = 0.0
     }
 
     SubShader {
@@ -47,10 +49,10 @@ Shader "Unlit/ModelGrass" {
             };
 
             sampler2D _WindTex;
-            float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
+            float4 _Albedo1, _Albedo2, _AOColor, _TipColor, _FogColor;
             StructuredBuffer<GrassData> positionBuffer;
             StructuredBuffer<bool> voteBuffer;
-            float _Scale, _Droop;
+            float _Scale, _Droop, _FogDensity;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -123,11 +125,11 @@ Shader "Unlit/ModelGrass" {
 
                 /* Fog */
                 float viewDistance = length(_WorldSpaceCameraPos - i.worldPos);
-                float fogFactor = (0.05f / log(2)) * viewDistance;
+                float fogFactor = (_FogDensity / log(2)) * viewDistance;
                 fogFactor = exp2(-fogFactor);
 
 
-                return lerp(float4(1, 1, 1, 1), grassColor, fogFactor);
+                return lerp(_FogColor, grassColor, fogFactor);
             }
 
             ENDCG
