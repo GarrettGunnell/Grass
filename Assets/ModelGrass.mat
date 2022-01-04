@@ -63,6 +63,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _Droop: 0.3
     - _DstBlend: 0
+    - _FogDensity: 0.064
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -79,11 +80,12 @@ Material:
     - _WindStrength: 0.5
     - _ZWrite: 1
     m_Colors:
-    - _AOColor: {r: 0.15886435, g: 0.16223702, b: 0.3207547, a: 1}
+    - _AOColor: {r: 0, g: 0.006764142, b: 0.7264151, a: 1}
     - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
-    - _Albedo1: {r: 0.9716981, g: 0.3254272, b: 0.63597286, a: 1}
-    - _Albedo2: {r: 1, g: 0.981489, b: 0.851, a: 1}
+    - _Albedo1: {r: 0.1264685, g: 0.5471698, b: 0.15405403, a: 1}
+    - _Albedo2: {r: 0.47915077, g: 0.764151, b: 0.4577697, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _TipColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FogColor: {r: 0.9828, g: 1, b: 0.957, a: 1}
+    - _TipColor: {r: 1, g: 0.83545566, b: 0.6556604, a: 1}
   m_BuildTextureStacks: []

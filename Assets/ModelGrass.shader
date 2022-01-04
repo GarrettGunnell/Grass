@@ -125,8 +125,8 @@ Shader "Unlit/ModelGrass" {
 
                 /* Fog */
                 float viewDistance = length(_WorldSpaceCameraPos - i.worldPos);
-                float fogFactor = (_FogDensity / log(2)) * viewDistance;
-                fogFactor = exp2(-fogFactor);
+                float fogFactor = (_FogDensity / sqrt(log(2))) * viewDistance;
+                fogFactor = exp2(-fogFactor * fogFactor);
 
 
                 return lerp(_FogColor, grassColor, fogFactor);
