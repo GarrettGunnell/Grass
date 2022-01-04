@@ -1,4 +1,4 @@
-Shader "Hidden/EdgeDetect" {
+Shader "Hidden/SSFog" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
     }
@@ -30,7 +30,8 @@ Shader "Hidden/EdgeDetect" {
             }
 
             sampler2D _MainTex, _CameraDepthTexture;
-            float4 _CameraDepthTexture_TexelSize;
+            float4 _FogColor;
+            float _FogDensity;
 
             fixed4 fp(v2f i) : SV_Target {
                 int x, y;
@@ -40,12 +41,10 @@ Shader "Hidden/EdgeDetect" {
 
                 float viewDistance = depth * _ProjectionParams.z;
 
-                float density = 0.05f;
-
-                float fogFactor = (density / log(2)) * viewDistance;
+                float fogFactor = (_FogDensity / log(2)) * viewDistance;
                 fogFactor = exp2(-fogFactor);
 
-                return lerp(float4(0.5f, 0.5f, 0.5f, 1), col, saturate(fogFactor));
+                return lerp(_FogColor, col, saturate(fogFactor));
             }
             ENDCG
         }
