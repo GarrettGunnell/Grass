@@ -12,6 +12,11 @@ Shader "Unlit/ModelGrass" {
         Cull Off
         Zwrite On
 
+        Tags {
+            "RenderType" = "Transparent"
+            "Queue" = "Transparent"
+        }
+
         Pass {
             CGPROGRAM
             #pragma vertex vert
