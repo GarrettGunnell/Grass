@@ -38,6 +38,17 @@ public class ModelGrass : MonoBehaviour {
         Debug.Log("NumInstances: " + numInstances.ToString());
 
         numGroups = numInstances / 128;
+        if (numGroups > 128) {
+            int powerOfTwo = 128;
+            while (powerOfTwo < numGroups)
+                powerOfTwo *= 2;
+            
+            numGroups = powerOfTwo;
+        } else {
+            while (128 % numGroups != 0)
+                numGroups++;
+        }
+
         Debug.Log("NumGroups: " + numGroups.ToString());
 
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
@@ -120,7 +131,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetInt("_NumOfGroups", numGroups);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayIn", groupSumArrayBuffer);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayOut", scannedGroupSumBuffer);
-        cullGrassShader.Dispatch(2, Mathf.CeilToInt(numInstances / 1024), 1, 1);
+        cullGrassShader.Dispatch(2, Mathf.CeilToInt(numInstances / 1024.0f), 1, 1);
 
         // Compact
         cullGrassShader.SetBuffer(3, "_GrassDataBuffer", grassDataBuffer);
