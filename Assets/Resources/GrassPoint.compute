@@ -37,7 +37,7 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
 
         float noise = abs(snoise(float3(pos.xz, 0.0f) * 0.2f));
 
-        pos.w = lerp(0.4f, 1.0f, noise);
+        pos.w = lerp(0.3f, 0.6f, noise);
 
         grass.position = pos;
         grass.displacement = displacement.r * _DisplacementStrength;

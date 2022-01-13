@@ -41,13 +41,10 @@ Shader "Hidden/SSFog" {
 
                 float viewDistance = depth * _ProjectionParams.z;
 
-                float fogFactor = (_FogDensity / sqrt(log(2))) * viewDistance;
+                float fogFactor = (_FogDensity / sqrt(log(2))) * (viewDistance);
                 fogFactor = exp2(-fogFactor * fogFactor);
 
                 float4 fogOutput = lerp(_FogColor, col, saturate(fogFactor));
-                
-                if (depth > 0.99f)
-                    fogOutput = lerp(fogOutput, lerp(_FogColor, col, 0.5f), i.uv.y);
 
                 return fogOutput;
             }

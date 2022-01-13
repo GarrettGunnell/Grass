@@ -15,7 +15,7 @@ void WindNoise(uint3 id : SV_DispatchThreadID) {
     float turbSize = 2.0f;
 
     float xyValue = id.x * xPeriod + id.y * yPeriod + turbPower * snoise(id * turbSize);
-    float sineValue = sin((xyValue + _Time) * _Frequency) * _Amplitude;
+    float sineValue = sin((xyValue + _Time) * _Frequency) * _Amplitude + _Amplitude * 0.5f;
 
     _WindMap[id.xy] = sineValue;
 }

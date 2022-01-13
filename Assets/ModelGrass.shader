@@ -8,6 +8,7 @@ Shader "Unlit/ModelGrass" {
         _Droop ("Droop", Range(0.0, 10.0)) = 0.0
         _FogColor ("Fog Color", Color) = (1, 1, 1)
         _FogDensity ("Fog Density", Range(0.0, 1.0)) = 0.0
+        _FogOffset ("Fog Offset", Range(0.0, 10.0)) = 0.0
     }
 
     SubShader {
@@ -52,7 +53,7 @@ Shader "Unlit/ModelGrass" {
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor, _FogColor;
             StructuredBuffer<GrassData> positionBuffer;
             StructuredBuffer<bool> voteBuffer;
-            float _Scale, _Droop, _FogDensity;
+            float _Scale, _Droop, _FogDensity, _FogOffset;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -82,21 +83,21 @@ Shader "Unlit/ModelGrass" {
 
                 float4 localPosition = RotateAroundXInDegrees(v.vertex, 90.0f);
                 localPosition = RotateAroundYInDegrees(localPosition, idHash * 180.0f);
-                localPosition += _Scale * v.uv.y * v.uv.y * v.uv.y;
+                localPosition.y += _Scale * v.uv.y * v.uv.y * v.uv.y;
+                localPosition.xz += _Droop * lerp(0.5f, 1.0f, idHash) * (v.uv.y * v.uv.y * _Scale) * animationDirection;
                 
                 float4 worldUV = float4(positionBuffer[instanceID].uv, 0, 0);
                 
                 float swayVariance = lerp(0.8, 1.0, idHash);
-                float movement = v.uv.y * v.uv.y * v.uv.y * (tex2Dlod(_WindTex, worldUV).r - _Droop);
+                float movement = v.uv.y * v.uv.y * (tex2Dlod(_WindTex, worldUV).r);
                 movement *= swayVariance;
                 
-                localPosition.x += movement * animationDirection.x;
-                localPosition.z += movement * animationDirection.y;
+                localPosition.xz += movement;
                 
                 float4 worldPosition = float4(grassPosition.xyz + localPosition, 1.0f);
 
                 worldPosition.y -= positionBuffer[instanceID].displacement;
-                worldPosition.y *= 1.0f + positionBuffer[instanceID].position.w;
+                worldPosition.y *= 1.0f + positionBuffer[instanceID].position.w * lerp(0.8f, 1.0f, idHash);
                 worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
@@ -117,7 +118,7 @@ Shader "Unlit/ModelGrass" {
                 float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
 
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
-                float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * i.uv.y);
+                float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * (1.0f + _Scale));
 
                 //return i.noiseVal;
 
@@ -125,7 +126,7 @@ Shader "Unlit/ModelGrass" {
 
                 /* Fog */
                 float viewDistance = length(_WorldSpaceCameraPos - i.worldPos);
-                float fogFactor = (_FogDensity / sqrt(log(2))) * viewDistance;
+                float fogFactor = (_FogDensity / sqrt(log(2))) * (max(0.0f, viewDistance - _FogOffset));
                 fogFactor = exp2(-fogFactor * fogFactor);
 
 
