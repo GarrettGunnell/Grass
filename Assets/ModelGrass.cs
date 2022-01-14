@@ -20,8 +20,6 @@ public class ModelGrass : MonoBehaviour {
     private ComputeShader initializeGrassShader, generateWindShader, cullGrassShader;
     private ComputeBuffer grassDataBuffer, grassVoteBuffer, grassScanBuffer, groupSumArrayBuffer, scannedGroupSumBuffer, culledGrassOutputBuffer, argsBuffer;
 
-    private ComputeBuffer compactedGrassIndicesBuffer;
-
     private RenderTexture wind;
 
     private int numInstances, numGroups;
@@ -71,8 +69,6 @@ public class ModelGrass : MonoBehaviour {
         groupSumArrayBuffer = new ComputeBuffer(numGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numGroups, 4);
         culledGrassOutputBuffer = new ComputeBuffer(numInstances, 4 * 7);
-
-        compactedGrassIndicesBuffer = new ComputeBuffer(numInstances, 4);
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
@@ -125,7 +121,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetBuffer(1, "_GrassVoteBuffer", grassVoteBuffer);
         cullGrassShader.SetBuffer(1, "_GrassScanBuffer", grassScanBuffer);
         cullGrassShader.SetBuffer(1, "_GroupSumArray", groupSumArrayBuffer);
-        cullGrassShader.Dispatch(1, threadGroupSizeX, 1, 1);
+        cullGrassShader.Dispatch(1, numGroups, 1, 1);
 
         // Scan Groups
         cullGrassShader.SetInt("_NumOfGroups", numGroups);
@@ -140,8 +136,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetBuffer(3, "_ArgsBuffer", argsBuffer);
         cullGrassShader.SetBuffer(3, "_CulledGrassOutputBuffer", culledGrassOutputBuffer);
         cullGrassShader.SetBuffer(3, "_GroupSumArray", scannedGroupSumBuffer);
-        cullGrassShader.SetBuffer(3, "_CompactedIndicesBuffer", compactedGrassIndicesBuffer);
-        cullGrassShader.Dispatch(3, threadGroupSizeX, 1, 1);
+        cullGrassShader.Dispatch(3, numGroups, 1, 1);
     }
 
     void GenerateWind() {
@@ -177,7 +172,6 @@ public class ModelGrass : MonoBehaviour {
         culledGrassOutputBuffer.Release();
         groupSumArrayBuffer.Release();
         scannedGroupSumBuffer.Release();
-        compactedGrassIndicesBuffer.Release();
         wind.Release();
         grassDataBuffer = null;
         argsBuffer = null;
@@ -187,6 +181,5 @@ public class ModelGrass : MonoBehaviour {
         grassScanBuffer = null;
         groupSumArrayBuffer = null;
         culledGrassOutputBuffer = null;
-        compactedGrassIndicesBuffer = null;
     }
 }

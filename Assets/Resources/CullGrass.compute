@@ -20,7 +20,6 @@ RWStructuredBuffer<GrassData> _CulledGrassOutputBuffer;
 RWStructuredBuffer<uint> _GroupSumArrayIn;
 RWStructuredBuffer<uint> _GroupSumArrayOut;
 RWStructuredBuffer<uint> _ArgsBuffer;
-RWStructuredBuffer<uint> _CompactedIndicesBuffer;
 
 float4x4 MATRIX_VP;
 int _NumOfGroups;
@@ -144,10 +143,9 @@ void Compact(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, ui
     uint groupID = _groupID.x;
     uint groupSum = groupID.x > 0 ? _GroupSumArray[groupID.x] : 0;
     bool inCamera = _GrassVoteBuffer[id.x];
-
+    
     if (inCamera == 1) {
         InterlockedAdd(_ArgsBuffer[1], 1);
-        _CompactedIndicesBuffer[tid] = _GrassScanBuffer[tid] + groupSum;
         _CulledGrassOutputBuffer[_GrassScanBuffer[tid] + groupSum] = _GrassDataBuffer[tid];
     }
 }
