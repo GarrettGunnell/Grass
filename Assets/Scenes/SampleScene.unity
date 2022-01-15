@@ -522,7 +522,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fogShader: {fileID: 4800000, guid: 14e87e2b7db94794382618452e8f1ade, type: 3}
-  fogColor: {r: 1, g: 1, b: 1, a: 0}
+  fogColor: {r: 0.9137255, g: 0.9607843, b: 1, a: 0}
   fogDensity: 0.06
 --- !u!1 &1422709744 stripped
 GameObject:

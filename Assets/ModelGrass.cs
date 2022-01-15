@@ -10,8 +10,6 @@ public class ModelGrass : MonoBehaviour {
     public Mesh grassMesh;
     public Texture heightMap;
 
-    public bool updateGrass;
-
     [Header("Wind")]
     public float windSpeed = 1.0f;
     public float frequency = 1.0f;
@@ -30,10 +28,17 @@ public class ModelGrass : MonoBehaviour {
         public float displacement;
     }
 
+    private struct GrassChunk {
+        public ComputeBuffer argsBuffer;
+        public ComputeBuffer positionsBuffer;
+        public ComputeBuffer culledPositionsBuffer;
+    }
+
+    GrassChunk grassChunk;
+
     void OnEnable() {
         numInstances = resolution * scale;
         numInstances *= numInstances;
-        Debug.Log("NumInstances: " + numInstances.ToString());
 
         numGroups = numInstances / 128;
         if (numGroups > 128) {
@@ -46,8 +51,6 @@ public class ModelGrass : MonoBehaviour {
             while (128 % numGroups != 0)
                 numGroups++;
         }
-
-        Debug.Log("NumGroups: " + numGroups.ToString());
 
         initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
@@ -105,8 +108,6 @@ public class ModelGrass : MonoBehaviour {
         Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
         Matrix4x4 VP = P * V;
 
-        int threadGroupSizeX = Mathf.CeilToInt(numInstances / 128.0f);
-
         //Reset Args
         cullGrassShader.SetBuffer(4, "_ArgsBuffer", argsBuffer);
         cullGrassShader.Dispatch(4, 1, 1, 1);
@@ -157,11 +158,6 @@ public class ModelGrass : MonoBehaviour {
         grassMaterial.SetTexture("_WindTex", wind);
 
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
-
-        if (updateGrass) {
-            updateGrassBuffer();
-            updateGrass = false;
-        }
     }
     
     void OnDisable() {
