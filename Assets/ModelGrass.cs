@@ -32,6 +32,7 @@ public class ModelGrass : MonoBehaviour {
         public ComputeBuffer argsBuffer;
         public ComputeBuffer positionsBuffer;
         public ComputeBuffer culledPositionsBuffer;
+        public Bounds bounds;
     }
 
     GrassChunk grassChunk;
@@ -76,6 +77,8 @@ public class ModelGrass : MonoBehaviour {
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
         wind.Create();
+
+        grassChunk.bounds = new Bounds(Vector3.zero, new Vector3(-20.0f, 200.0f, 20.0f));
 
         updateGrassBuffer();
         /*
@@ -148,7 +151,7 @@ public class ModelGrass : MonoBehaviour {
         generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
     }
 
-    void Update() {      
+    void Update() {
         CullGrass();
         GenerateWind();
 
@@ -157,7 +160,7 @@ public class ModelGrass : MonoBehaviour {
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
 
-        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassChunk.argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, grassChunk.bounds, grassChunk.argsBuffer);
     }
     
     void OnDisable() {
