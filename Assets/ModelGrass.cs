@@ -16,7 +16,7 @@ public class ModelGrass : MonoBehaviour {
     public float windStrength = 1.0f;
 
     private ComputeShader initializeGrassShader, generateWindShader, cullGrassShader;
-    private ComputeBuffer grassVoteBuffer, grassScanBuffer, groupSumArrayBuffer, scannedGroupSumBuffer;
+    private ComputeBuffer voteBuffer, scanBuffer, groupSumArrayBuffer, scannedGroupSumBuffer;
 
     private RenderTexture wind;
 
@@ -67,8 +67,8 @@ public class ModelGrass : MonoBehaviour {
         grassChunk.argsBuffer.SetData(args);
 
         grassChunk.positionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
-        grassVoteBuffer = new ComputeBuffer(numInstances, 4);
-        grassScanBuffer = new ComputeBuffer(numInstances, 4);
+        voteBuffer = new ComputeBuffer(numInstances, 4);
+        scanBuffer = new ComputeBuffer(numInstances, 4);
         groupSumArrayBuffer = new ComputeBuffer(numGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numGroups, 4);
         grassChunk.culledPositionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
@@ -115,12 +115,12 @@ public class ModelGrass : MonoBehaviour {
         // Vote
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
         cullGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk.positionsBuffer);
-        cullGrassShader.SetBuffer(0, "_GrassVoteBuffer", grassVoteBuffer);
+        cullGrassShader.SetBuffer(0, "_VoteBuffer", voteBuffer);
         cullGrassShader.Dispatch(0, Mathf.CeilToInt(numInstances / 128.0f), 1, 1);
 
         // Scan Instances
-        cullGrassShader.SetBuffer(1, "_GrassVoteBuffer", grassVoteBuffer);
-        cullGrassShader.SetBuffer(1, "_GrassScanBuffer", grassScanBuffer);
+        cullGrassShader.SetBuffer(1, "_VoteBuffer", voteBuffer);
+        cullGrassShader.SetBuffer(1, "_ScanBuffer", scanBuffer);
         cullGrassShader.SetBuffer(1, "_GroupSumArray", groupSumArrayBuffer);
         cullGrassShader.Dispatch(1, numGroups, 1, 1);
 
@@ -132,8 +132,8 @@ public class ModelGrass : MonoBehaviour {
 
         // Compact
         cullGrassShader.SetBuffer(3, "_GrassDataBuffer", grassChunk.positionsBuffer);
-        cullGrassShader.SetBuffer(3, "_GrassVoteBuffer", grassVoteBuffer);
-        cullGrassShader.SetBuffer(3, "_GrassScanBuffer", grassScanBuffer);
+        cullGrassShader.SetBuffer(3, "_VoteBuffer", voteBuffer);
+        cullGrassShader.SetBuffer(3, "_ScanBuffer", scanBuffer);
         cullGrassShader.SetBuffer(3, "_ArgsBuffer", grassChunk.argsBuffer);
         cullGrassShader.SetBuffer(3, "_CulledGrassOutputBuffer", grassChunk.culledPositionsBuffer);
         cullGrassShader.SetBuffer(3, "_GroupSumArray", scannedGroupSumBuffer);
@@ -153,7 +153,7 @@ public class ModelGrass : MonoBehaviour {
         GenerateWind();
 
         grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
-        grassMaterial.SetBuffer("voteBuffer", grassVoteBuffer);
+        grassMaterial.SetBuffer("voteBuffer", voteBuffer);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
 
@@ -163,16 +163,16 @@ public class ModelGrass : MonoBehaviour {
     void OnDisable() {
         grassChunk.positionsBuffer.Release();
         grassChunk.argsBuffer.Release();
-        grassVoteBuffer.Release();
-        grassScanBuffer.Release();
+        voteBuffer.Release();
+        scanBuffer.Release();
         grassChunk.culledPositionsBuffer.Release();
         groupSumArrayBuffer.Release();
         scannedGroupSumBuffer.Release();
         wind.Release();
         wind = null;
         scannedGroupSumBuffer = null;
-        grassVoteBuffer = null;
-        grassScanBuffer = null;
+        voteBuffer = null;
+        scanBuffer = null;
         groupSumArrayBuffer = null;
     }
 }
