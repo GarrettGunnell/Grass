@@ -590,7 +590,7 @@ MonoBehaviour:
   scale: 20
   displacementStrength: 5
   grassMaterial: {fileID: 2100000, guid: 4b2d534b19470a54b8a2dad8062c0e1c, type: 2}
-  grassMesh: {fileID: 7629811779324647873, guid: bce973a2c56c42046b437e28ac8b3f2b, type: 3}
+  grassMesh: {fileID: 7629811779324647873, guid: 73829f8af30a2db499de1c2f530f9744, type: 3}
   heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
   windSpeed: 2
   frequency: 0.4

@@ -63,8 +63,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _Droop: 0.4
     - _DstBlend: 0
-    - _FogDensity: 0.16
-    - _FogOffset: 3.2
+    - _FogDensity: 0
+    - _FogOffset: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
