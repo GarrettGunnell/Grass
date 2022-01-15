@@ -523,7 +523,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fogShader: {fileID: 4800000, guid: 14e87e2b7db94794382618452e8f1ade, type: 3}
   fogColor: {r: 0.9137255, g: 0.9607843, b: 1, a: 0}
-  fogDensity: 0.06
+  fogDensity: 0
 --- !u!1 &1422709744 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
@@ -592,7 +592,6 @@ MonoBehaviour:
   grassMaterial: {fileID: 2100000, guid: 4b2d534b19470a54b8a2dad8062c0e1c, type: 2}
   grassMesh: {fileID: 7629811779324647873, guid: bce973a2c56c42046b437e28ac8b3f2b, type: 3}
   heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
-  updateGrass: 0
   windSpeed: 2
   frequency: 0.4
   windStrength: 0.3

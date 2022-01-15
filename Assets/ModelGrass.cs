@@ -16,7 +16,7 @@ public class ModelGrass : MonoBehaviour {
     public float windStrength = 1.0f;
 
     private ComputeShader initializeGrassShader, generateWindShader, cullGrassShader;
-    private ComputeBuffer grassDataBuffer, grassVoteBuffer, grassScanBuffer, groupSumArrayBuffer, scannedGroupSumBuffer, culledGrassOutputBuffer, argsBuffer;
+    private ComputeBuffer grassVoteBuffer, grassScanBuffer, groupSumArrayBuffer, scannedGroupSumBuffer;
 
     private RenderTexture wind;
 
@@ -56,7 +56,7 @@ public class ModelGrass : MonoBehaviour {
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
         cullGrassShader = Resources.Load<ComputeShader>("CullGrass");
         
-        argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        grassChunk.argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
         uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
         // Arguments for drawing mesh.
         // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
@@ -64,14 +64,14 @@ public class ModelGrass : MonoBehaviour {
         args[1] = (uint)0;
         args[2] = (uint)grassMesh.GetIndexStart(0);
         args[3] = (uint)grassMesh.GetBaseVertex(0);
-        argsBuffer.SetData(args);
+        grassChunk.argsBuffer.SetData(args);
 
-        grassDataBuffer = new ComputeBuffer(numInstances, 4 * 7);
+        grassChunk.positionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
         grassVoteBuffer = new ComputeBuffer(numInstances, 4);
         grassScanBuffer = new ComputeBuffer(numInstances, 4);
         groupSumArrayBuffer = new ComputeBuffer(numGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numGroups, 4);
-        culledGrassOutputBuffer = new ComputeBuffer(numInstances, 4 * 7);
+        grassChunk.culledPositionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
@@ -90,7 +90,7 @@ public class ModelGrass : MonoBehaviour {
     void updateGrassBuffer() {
         initializeGrassShader.SetInt("_Dimension", resolution * scale);
         initializeGrassShader.SetInt("_Scale", scale);
-        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
+        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk.positionsBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt((resolution * scale) / 8.0f), Mathf.CeilToInt((resolution * scale) / 8.0f), 1);
@@ -98,7 +98,7 @@ public class ModelGrass : MonoBehaviour {
         CullGrass();
         GenerateWind();
 
-        grassMaterial.SetBuffer("positionBuffer", grassDataBuffer);
+        grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
     }
@@ -109,12 +109,12 @@ public class ModelGrass : MonoBehaviour {
         Matrix4x4 VP = P * V;
 
         //Reset Args
-        cullGrassShader.SetBuffer(4, "_ArgsBuffer", argsBuffer);
+        cullGrassShader.SetBuffer(4, "_ArgsBuffer", grassChunk.argsBuffer);
         cullGrassShader.Dispatch(4, 1, 1, 1);
 
         // Vote
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
-        cullGrassShader.SetBuffer(0, "_GrassDataBuffer", grassDataBuffer);
+        cullGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk.positionsBuffer);
         cullGrassShader.SetBuffer(0, "_GrassVoteBuffer", grassVoteBuffer);
         cullGrassShader.Dispatch(0, Mathf.CeilToInt(numInstances / 128.0f), 1, 1);
 
@@ -131,11 +131,11 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.Dispatch(2, Mathf.CeilToInt(numInstances / 1024.0f), 1, 1);
 
         // Compact
-        cullGrassShader.SetBuffer(3, "_GrassDataBuffer", grassDataBuffer);
+        cullGrassShader.SetBuffer(3, "_GrassDataBuffer", grassChunk.positionsBuffer);
         cullGrassShader.SetBuffer(3, "_GrassVoteBuffer", grassVoteBuffer);
         cullGrassShader.SetBuffer(3, "_GrassScanBuffer", grassScanBuffer);
-        cullGrassShader.SetBuffer(3, "_ArgsBuffer", argsBuffer);
-        cullGrassShader.SetBuffer(3, "_CulledGrassOutputBuffer", culledGrassOutputBuffer);
+        cullGrassShader.SetBuffer(3, "_ArgsBuffer", grassChunk.argsBuffer);
+        cullGrassShader.SetBuffer(3, "_CulledGrassOutputBuffer", grassChunk.culledPositionsBuffer);
         cullGrassShader.SetBuffer(3, "_GroupSumArray", scannedGroupSumBuffer);
         cullGrassShader.Dispatch(3, numGroups, 1, 1);
     }
@@ -152,30 +152,27 @@ public class ModelGrass : MonoBehaviour {
         CullGrass();
         GenerateWind();
 
-        grassMaterial.SetBuffer("positionBuffer", culledGrassOutputBuffer);
+        grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
         grassMaterial.SetBuffer("voteBuffer", grassVoteBuffer);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
 
-        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, new Bounds(Vector3.zero, new Vector3(-500.0f, 200.0f, 500.0f)), grassChunk.argsBuffer);
     }
     
     void OnDisable() {
-        grassDataBuffer.Release();
-        argsBuffer.Release();
+        grassChunk.positionsBuffer.Release();
+        grassChunk.argsBuffer.Release();
         grassVoteBuffer.Release();
         grassScanBuffer.Release();
-        culledGrassOutputBuffer.Release();
+        grassChunk.culledPositionsBuffer.Release();
         groupSumArrayBuffer.Release();
         scannedGroupSumBuffer.Release();
         wind.Release();
-        grassDataBuffer = null;
-        argsBuffer = null;
         wind = null;
         scannedGroupSumBuffer = null;
         grassVoteBuffer = null;
         grassScanBuffer = null;
         groupSumArrayBuffer = null;
-        culledGrassOutputBuffer = null;
     }
 }
