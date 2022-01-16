@@ -586,8 +586,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7f78c55bd4018c4b9e9b7844f315113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 20
-  scale: 20
+  fieldSize: 20
+  chunkDensity: 10
+  numChunks: 1
   displacementStrength: 5
   grassMaterial: {fileID: 2100000, guid: 4b2d534b19470a54b8a2dad8062c0e1c, type: 2}
   grassMesh: {fileID: 7629811779324647873, guid: 73829f8af30a2db499de1c2f530f9744, type: 3}
