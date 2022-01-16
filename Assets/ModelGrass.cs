@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using static System.Runtime.InteropServices.Marshal;
 using UnityEngine;
 
 public class ModelGrass : MonoBehaviour {
@@ -53,7 +54,7 @@ public class ModelGrass : MonoBehaviour {
                 numGroups++;
         }
 
-        initializeGrassShader = Resources.Load<ComputeShader>("GrassPoint");
+        initializeGrassShader = Resources.Load<ComputeShader>("GrassChunkPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
         cullGrassShader = Resources.Load<ComputeShader>("CullGrass");
         
@@ -67,18 +68,18 @@ public class ModelGrass : MonoBehaviour {
         args[3] = (uint)grassMesh.GetBaseVertex(0);
         grassChunk.argsBuffer.SetData(args);
 
-        grassChunk.positionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
+        grassChunk.positionsBuffer = new ComputeBuffer(numInstances, SizeOf(typeof(GrassData)));
         voteBuffer = new ComputeBuffer(numInstances, 4);
         scanBuffer = new ComputeBuffer(numInstances, 4);
         groupSumArrayBuffer = new ComputeBuffer(numGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numGroups, 4);
-        grassChunk.culledPositionsBuffer = new ComputeBuffer(numInstances, 4 * 7);
+        grassChunk.culledPositionsBuffer = new ComputeBuffer(numInstances, SizeOf(typeof(GrassData)));
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
         wind.Create();
 
-        grassChunk.bounds = new Bounds(Vector3.zero, new Vector3(-20.0f, 200.0f, 20.0f));
+        grassChunk.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
 
         updateGrassBuffer();
         /*
@@ -91,8 +92,11 @@ public class ModelGrass : MonoBehaviour {
     }
 
     void updateGrassBuffer() {
-        initializeGrassShader.SetInt("_Dimension", resolution * scale);
+        initializeGrassShader.SetInt("_Dimension", resolution);
         initializeGrassShader.SetInt("_Scale", scale);
+        initializeGrassShader.SetInt("_XOffset", 1);
+        initializeGrassShader.SetInt("_YOffset", 1);
+        initializeGrassShader.SetInt("_NumChunks", 2);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk.positionsBuffer);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
@@ -156,7 +160,6 @@ public class ModelGrass : MonoBehaviour {
         GenerateWind();
 
         grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
-        grassMaterial.SetBuffer("voteBuffer", voteBuffer);
         grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
         grassMaterial.SetTexture("_WindTex", wind);
 

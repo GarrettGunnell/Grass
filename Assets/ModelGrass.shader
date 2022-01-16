@@ -52,7 +52,6 @@ Shader "Unlit/ModelGrass" {
             sampler2D _WindTex;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor, _FogColor;
             StructuredBuffer<GrassData> positionBuffer;
-            StructuredBuffer<bool> voteBuffer;
             float _Scale, _Droop, _FogDensity, _FogOffset;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
@@ -101,10 +100,6 @@ Shader "Unlit/ModelGrass" {
                 worldPosition.y += positionBuffer[instanceID].displacement;
                 
                 o.vertex = UnityObjectToClipPos(worldPosition);
-                /*
-                if (voteBuffer[instanceID] == 0)
-                    o.vertex = 0;
-                */
                 o.uv = v.uv;
                 o.noiseVal = tex2Dlod(_WindTex, worldUV).r;
                 o.worldPos = worldPosition;

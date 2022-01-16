@@ -1,0 +1,59 @@
+#pragma kernel InitializeGrassChunk
+
+#include "Simplex.compute"
+
+struct GrassData {
+    float4 position;
+    float2 uv;
+    float displacement;
+};
+
+RWStructuredBuffer<GrassData> _GrassDataBuffer;
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+
+int _Dimension, _Scale, _XOffset, _YOffset, _NumChunks;
+float _DisplacementStrength;
+
+[numthreads(8,8,1)]
+void InitializeGrassChunk(uint3 id : SV_DispatchThreadID) {
+    if (id.x < uint(_Dimension * _Scale) && id.y < uint(_Dimension * _Scale)) {
+        GrassData grass;
+        float4 pos = 0.0f;
+
+        float scale = float(_Scale);
+        float dimension = float(_Dimension);
+        float scaledDimension = dimension * scale;
+
+        float chunkX = (id.x - scaledDimension) + scaledDimension * _XOffset;
+        float chunkY = (id.y - scaledDimension) + scaledDimension * _YOffset;
+
+        float2 chunkPos = float2(chunkX, chunkY);
+
+        pos.xz = chunkPos * (1.0f / (scale * _NumChunks));
+
+        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.05f;
+        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.05f;
+
+        float uvX = pos.x + dimension * (1.0f / _NumChunks);
+        float uvY = pos.z + dimension * (1.0f / _NumChunks);
+
+        float2 uv = float2(uvX, uvY) / dimension;
+        uv.y = 1 - uv.y;
+        uv.x = 1 - uv.x;
+
+        float4 displacement = _HeightMap.SampleLevel(sampler_HeightMap, uv, 0);
+
+        pos.y += displacement.r * _DisplacementStrength + 0.5f;
+
+        float noise = abs(snoise(float3(pos.xz, 0.0f) * 0.2f));
+
+        pos.w = lerp(0.3f, 0.6f, noise);
+
+        grass.position = pos;
+        grass.displacement = displacement.r * _DisplacementStrength;
+        grass.uv = uv;
+
+        _GrassDataBuffer[id.x + id.y * scaledDimension] = grass;
+    }
+}
