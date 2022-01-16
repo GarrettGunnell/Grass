@@ -35,6 +35,7 @@ public class ModelGrass : MonoBehaviour {
         public ComputeBuffer positionsBuffer;
         public ComputeBuffer culledPositionsBuffer;
         public Bounds bounds;
+        public Material material;
     }
 
     GrassChunk grassChunk, grassChunk2;
@@ -105,6 +106,8 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", chunk.positionsBuffer);
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
 
+        chunk.material = new Material(grassMaterial);
+
         return chunk;
     }
 
@@ -158,16 +161,16 @@ public class ModelGrass : MonoBehaviour {
         CullGrass(grassChunk2);
         GenerateWind();
 
-        grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
-        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
-        grassMaterial.SetTexture("_WindTex", wind);
+        grassChunk.material.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
+        grassChunk.material.SetFloat("_DisplacementStrength", displacementStrength);
+        grassChunk.material.SetTexture("_WindTex", wind);
 
-        grassMat2.SetBuffer("positionBuffer", grassChunk2.culledPositionsBuffer);
-        grassMat2.SetFloat("_DisplacementStrength", displacementStrength);
-        grassMat2.SetTexture("_WindTex", wind);
+        grassChunk2.material.SetBuffer("positionBuffer", grassChunk2.culledPositionsBuffer);
+        grassChunk2.material.SetFloat("_DisplacementStrength", displacementStrength);
+        grassChunk2.material.SetTexture("_WindTex", wind);
 
-        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMaterial, grassChunk.bounds, grassChunk.argsBuffer);
-        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassMat2, grassChunk2.bounds, grassChunk2.argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassChunk.material, grassChunk.bounds, grassChunk.argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassChunk2.material, grassChunk2.bounds, grassChunk2.argsBuffer);
     }
     
     void OnDisable() {
