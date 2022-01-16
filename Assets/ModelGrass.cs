@@ -60,35 +60,18 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader = Resources.Load<ComputeShader>("GrassChunkPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
         cullGrassShader = Resources.Load<ComputeShader>("CullGrass");
-        
-        grassChunk.argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-        // Arguments for drawing mesh.
-        // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
-        args[0] = (uint)grassMesh.GetIndexCount(0);
-        args[1] = (uint)0;
-        args[2] = (uint)grassMesh.GetIndexStart(0);
-        args[3] = (uint)grassMesh.GetBaseVertex(0);
-        grassChunk.argsBuffer.SetData(args);
 
-        grassChunk.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
         voteBuffer = new ComputeBuffer(numInstancesPerChunk, 4);
         scanBuffer = new ComputeBuffer(numInstancesPerChunk, 4);
         groupSumArrayBuffer = new ComputeBuffer(numThreadGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numThreadGroups, 4);
-        grassChunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
 
-        grassChunk2.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
-        grassChunk2.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
-        grassChunk2.argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-        grassChunk2.argsBuffer.SetData(args);
+        grassChunk = initializeGrassChunk(0, 0);
+        grassChunk2 = initializeGrassChunk(1, 1);
 
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
         wind.Create();
-
-        grassChunk.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
-        grassChunk2.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
 
         grassMat2 = new Material(grassMaterial);
         updateGrassBuffer();
@@ -99,6 +82,27 @@ public class ModelGrass : MonoBehaviour {
         for (int i = 0; i < numThreadGroups; ++i) {
             Debug.Log(computedata[i]);
         }*/
+    }
+
+    GrassChunk initializeGrassChunk(int xOffset, int yOffset) {
+        GrassChunk chunk = new GrassChunk();
+
+        chunk.argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+
+        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
+        // Arguments for drawing mesh.
+        // 0 == number of triangle indices, 1 == population, others are only relevant if drawing submeshes.
+        args[0] = (uint)grassMesh.GetIndexCount(0);
+        args[1] = (uint)0;
+        args[2] = (uint)grassMesh.GetIndexStart(0);
+        args[3] = (uint)grassMesh.GetBaseVertex(0);
+        chunk.argsBuffer.SetData(args);
+
+        chunk.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
+        chunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
+        chunk.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
+
+        return chunk;
     }
 
     void updateGrassBuffer() {
@@ -126,7 +130,7 @@ public class ModelGrass : MonoBehaviour {
         grassMaterial.SetTexture("_WindTex", wind);
     }
 
-    void CullGrass(GrassChunk chunk) {        
+    void CullGrass(GrassChunk chunk) {
         Matrix4x4 P = Camera.main.projectionMatrix;
         Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
         Matrix4x4 VP = P * V;
