@@ -66,6 +66,12 @@ public class ModelGrass : MonoBehaviour {
         groupSumArrayBuffer = new ComputeBuffer(numThreadGroups, 4);
         scannedGroupSumBuffer = new ComputeBuffer(numThreadGroups, 4);
 
+        initializeGrassShader.SetInt("_Dimension", fieldSize);
+        initializeGrassShader.SetInt("_Scale", chunkDensity);
+        initializeGrassShader.SetInt("_NumChunks", 2);
+        initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
+        initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
+
         grassChunk = initializeGrassChunk(0, 0);
         grassChunk2 = initializeGrassChunk(1, 1);
 
@@ -74,14 +80,6 @@ public class ModelGrass : MonoBehaviour {
         wind.Create();
 
         grassMat2 = new Material(grassMaterial);
-        updateGrassBuffer();
-        /*
-        uint[] computedata = new uint[numThreadGroups];
-        scannedGroupSumBuffer.GetData(computedata);
-
-        for (int i = 0; i < numThreadGroups; ++i) {
-            Debug.Log(computedata[i]);
-        }*/
     }
 
     GrassChunk initializeGrassChunk(int xOffset, int yOffset) {
@@ -102,32 +100,12 @@ public class ModelGrass : MonoBehaviour {
         chunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
         chunk.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
 
+        initializeGrassShader.SetInt("_XOffset", xOffset);
+        initializeGrassShader.SetInt("_YOffset", yOffset);
+        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", chunk.positionsBuffer);
+        initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
+
         return chunk;
-    }
-
-    void updateGrassBuffer() {
-        initializeGrassShader.SetInt("_Dimension", fieldSize);
-        initializeGrassShader.SetInt("_Scale", chunkDensity);
-        initializeGrassShader.SetInt("_XOffset", 1);
-        initializeGrassShader.SetInt("_YOffset", 1);
-        initializeGrassShader.SetInt("_NumChunks", 2);
-        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk.positionsBuffer);
-        initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
-        initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
-        initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
-
-        initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", grassChunk2.positionsBuffer);
-        initializeGrassShader.SetInt("_XOffset", 0);
-        initializeGrassShader.SetInt("_YOffset", 0);
-        initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
-        
-        CullGrass(grassChunk);
-        CullGrass(grassChunk2);
-        GenerateWind();
-
-        grassMaterial.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
-        grassMaterial.SetFloat("_DisplacementStrength", displacementStrength);
-        grassMaterial.SetTexture("_WindTex", wind);
     }
 
     void CullGrass(GrassChunk chunk) {
