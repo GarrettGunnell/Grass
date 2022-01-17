@@ -13,6 +13,7 @@ struct GrassData {
 };
 
 RWStructuredBuffer<uint> _ArgsBuffer;
+RWStructuredBuffer<uint> _ArgsBufferLOD;
 RWStructuredBuffer<GrassData> _GrassDataBuffer;
 RWStructuredBuffer<uint> _VoteBuffer;
 RWStructuredBuffer<uint> _ScanBuffer;

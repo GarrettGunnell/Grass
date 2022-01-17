@@ -41,8 +41,12 @@ public class ModelGrass : MonoBehaviour {
     }
 
     GrassChunk[] chunks;
+    uint[] args;
+    uint[] argsLOD;
 
     Bounds fieldBounds;
+
+
 
     void OnEnable() {
         numInstancesPerChunk = Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity;
@@ -84,6 +88,18 @@ public class ModelGrass : MonoBehaviour {
         wind.Create();
         numWindThreadGroups = Mathf.CeilToInt(wind.height / 8.0f);
 
+        args = new uint[5] { 0, 0, 0, 0, 0 };
+        args[0] = (uint)grassMesh.GetIndexCount(0);
+        args[1] = (uint)0;
+        args[2] = (uint)grassMesh.GetIndexStart(0);
+        args[3] = (uint)grassMesh.GetBaseVertex(0);
+
+        argsLOD = new uint[5] { 0, 0, 0, 0, 0 };
+        argsLOD[0] = (uint)grassLODMesh.GetIndexCount(0);
+        argsLOD[1] = (uint)0;
+        argsLOD[2] = (uint)grassLODMesh.GetIndexStart(0);
+        argsLOD[3] = (uint)grassLODMesh.GetBaseVertex(0);
+
         initializeChunks();
 
         fieldBounds = new Bounds(Vector3.zero, new Vector3(-fieldSize, displacementStrength * 2, fieldSize));
@@ -105,18 +121,8 @@ public class ModelGrass : MonoBehaviour {
         chunk.argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
         chunk.argsBufferLOD = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
-        uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-        args[0] = (uint)grassMesh.GetIndexCount(0);
-        args[1] = (uint)0;
-        args[2] = (uint)grassMesh.GetIndexStart(0);
-        args[3] = (uint)grassMesh.GetBaseVertex(0);
         chunk.argsBuffer.SetData(args);
-
-        args[0] = (uint)grassLODMesh.GetIndexCount(0);
-        args[1] = (uint)0;
-        args[2] = (uint)grassLODMesh.GetIndexStart(0);
-        args[3] = (uint)grassLODMesh.GetBaseVertex(0);
-        chunk.argsBufferLOD.SetData(args);
+        chunk.argsBufferLOD.SetData(argsLOD);
 
         chunk.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
         chunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
@@ -148,8 +154,10 @@ public class ModelGrass : MonoBehaviour {
 
     void CullGrass(GrassChunk chunk, Matrix4x4 VP, bool noLOD) {
         //Reset Args
-        cullGrassShader.SetBuffer(4, "_ArgsBuffer", noLOD ? chunk.argsBuffer : chunk.argsBufferLOD);
-        cullGrassShader.Dispatch(4, 1, 1, 1);
+        if (noLOD)
+            chunk.argsBuffer.SetData(args);
+        else
+            chunk.argsBufferLOD.SetData(argsLOD);
 
         // Vote
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
