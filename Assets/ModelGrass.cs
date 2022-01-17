@@ -187,8 +187,12 @@ public class ModelGrass : MonoBehaviour {
         GenerateWind();
 
         for (int i = 0; i < numChunks * numChunks; ++i) {
-            CullGrass(chunks[i], VP);
-            Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, fieldBounds, chunks[i].argsBuffer);
+            Vector3 screenPoint = Camera.main.WorldToViewportPoint(chunks[i].bounds.center);
+            bool onScreen = screenPoint.z > -5.0f && screenPoint.x > -25.0f && screenPoint.x < 25.0f && screenPoint.y > -25.0f && screenPoint.y < 25.0f;
+            if (onScreen) {
+                CullGrass(chunks[i], VP);
+                Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, fieldBounds, chunks[i].argsBuffer);
+            }
         }
     }
     
