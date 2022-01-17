@@ -40,6 +40,8 @@ public class ModelGrass : MonoBehaviour {
 
     GrassChunk[] chunks;
 
+    Bounds fieldBounds;
+
     void OnEnable() {
         numInstancesPerChunk = Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity;
         numInstancesPerChunk *= numInstancesPerChunk;
@@ -80,6 +82,8 @@ public class ModelGrass : MonoBehaviour {
         numWindThreadGroups = Mathf.CeilToInt(wind.height / 8.0f);
 
         initializeChunks();
+
+        fieldBounds = new Bounds(Vector3.zero, new Vector3(-fieldSize, displacementStrength * 2, fieldSize));
     }
 
     void initializeChunks() {
@@ -108,7 +112,17 @@ public class ModelGrass : MonoBehaviour {
 
         chunk.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
         chunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
-        chunk.bounds = new Bounds(this.transform.position, new Vector3(-300.0f, 200.0f, 300.0f));
+        int chunkDim = Mathf.CeilToInt(fieldSize / numChunks);
+        
+        Vector3 c = new Vector3(0.0f, 0.0f, 0.0f);
+        
+        c.y = 0.0f;
+        c.x = -(chunkDim * 0.5f * numChunks) + chunkDim * xOffset;
+        c.z = -(chunkDim * 0.5f * numChunks) + chunkDim * yOffset;
+        c.x += chunkDim * 0.5f;
+        c.z += chunkDim * 0.5f;
+        
+        chunk.bounds = new Bounds(c, new Vector3(-chunkDim, 10.0f, chunkDim));
 
         initializeGrassShader.SetInt("_XOffset", xOffset);
         initializeGrassShader.SetInt("_YOffset", yOffset);
@@ -174,7 +188,7 @@ public class ModelGrass : MonoBehaviour {
 
         for (int i = 0; i < numChunks * numChunks; ++i) {
             CullGrass(chunks[i], VP);
-            Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, chunks[i].bounds, chunks[i].argsBuffer);
+            Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, fieldBounds, chunks[i].argsBuffer);
         }
     }
     
@@ -205,5 +219,14 @@ public class ModelGrass : MonoBehaviour {
         chunk.culledPositionsBuffer = null;
         chunk.argsBuffer.Release();
         chunk.argsBuffer = null;
+    }
+
+    void OnDrawGizmos() {
+        Gizmos.color = Color.yellow;
+        if (chunks != null) {
+            for (int i = 0; i < numChunks * numChunks; ++i) {
+                Gizmos.DrawWireCube(chunks[i].bounds.center, chunks[i].bounds.size);
+            }
+        }
     }
 }
