@@ -31,7 +31,7 @@ Shader "Hidden/SSFog" {
 
             sampler2D _MainTex, _CameraDepthTexture;
             float4 _FogColor;
-            float _FogDensity;
+            float _FogDensity, _FogOffset;
 
             fixed4 fp(v2f i) : SV_Target {
                 int x, y;
@@ -41,7 +41,7 @@ Shader "Hidden/SSFog" {
 
                 float viewDistance = depth * _ProjectionParams.z;
 
-                float fogFactor = (_FogDensity / sqrt(log(2))) * (viewDistance);
+                float fogFactor = (_FogDensity / sqrt(log(2))) * max(0.0f, viewDistance - _FogOffset);
                 fogFactor = exp2(-fogFactor * fogFactor);
 
                 float4 fogOutput = lerp(_FogColor, col, saturate(fogFactor));
