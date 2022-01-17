@@ -22,7 +22,7 @@ public class ModelGrass : MonoBehaviour {
 
     private RenderTexture wind;
 
-    private int numInstancesPerChunk, numThreadGroups;
+    private int numInstancesPerChunk, numThreadGroups, numVoteThreadGroups, numGroupScanThreadGroups, numWindThreadGroups;
 
     private struct GrassData {
         public Vector4 position;
@@ -57,6 +57,8 @@ public class ModelGrass : MonoBehaviour {
             while (128 % numThreadGroups != 0)
                 numThreadGroups++;
         }
+        numVoteThreadGroups = Mathf.CeilToInt(numInstancesPerChunk / 128.0f);
+        numGroupScanThreadGroups = Mathf.CeilToInt(numInstancesPerChunk / 1024.0f);
 
         initializeGrassShader = Resources.Load<ComputeShader>("GrassChunkPoint");
         generateWindShader = Resources.Load<ComputeShader>("WindNoise");
@@ -73,12 +75,13 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
 
-        grassChunk = initializeGrassChunk(0, 0);
-        grassChunk2 = initializeGrassChunk(1, 1);
-
         wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
         wind.Create();
+        numWindThreadGroups = Mathf.CeilToInt(wind.height / 8.0f);
+
+        grassChunk = initializeGrassChunk(0, 0);
+        grassChunk2 = initializeGrassChunk(1, 1);
 
         grassMat2 = new Material(grassMaterial);
     }
@@ -107,15 +110,14 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
 
         chunk.material = new Material(grassMaterial);
+        chunk.material.SetBuffer("positionBuffer", chunk.culledPositionsBuffer);
+        chunk.material.SetFloat("_DisplacementStrength", displacementStrength);
+        chunk.material.SetTexture("_WindTex", wind);
 
         return chunk;
     }
 
-    void CullGrass(GrassChunk chunk) {
-        Matrix4x4 P = Camera.main.projectionMatrix;
-        Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
-        Matrix4x4 VP = P * V;
-
+    void CullGrass(GrassChunk chunk, Matrix4x4 VP) {
         //Reset Args
         cullGrassShader.SetBuffer(4, "_ArgsBuffer", chunk.argsBuffer);
         cullGrassShader.Dispatch(4, 1, 1, 1);
@@ -124,7 +126,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
         cullGrassShader.SetBuffer(0, "_GrassDataBuffer", chunk.positionsBuffer);
         cullGrassShader.SetBuffer(0, "_VoteBuffer", voteBuffer);
-        cullGrassShader.Dispatch(0, Mathf.CeilToInt(numInstancesPerChunk / 128.0f), 1, 1);
+        cullGrassShader.Dispatch(0, numVoteThreadGroups, 1, 1);
 
         // Scan Instances
         cullGrassShader.SetBuffer(1, "_VoteBuffer", voteBuffer);
@@ -136,7 +138,7 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetInt("_NumOfGroups", numThreadGroups);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayIn", groupSumArrayBuffer);
         cullGrassShader.SetBuffer(2, "_GroupSumArrayOut", scannedGroupSumBuffer);
-        cullGrassShader.Dispatch(2, Mathf.CeilToInt(numInstancesPerChunk / 1024.0f), 1, 1);
+        cullGrassShader.Dispatch(2, numGroupScanThreadGroups, 1, 1);
 
         // Compact
         cullGrassShader.SetBuffer(3, "_GrassDataBuffer", chunk.positionsBuffer);
@@ -153,21 +155,17 @@ public class ModelGrass : MonoBehaviour {
         generateWindShader.SetFloat("_Time", Time.time * windSpeed);
         generateWindShader.SetFloat("_Frequency", frequency);
         generateWindShader.SetFloat("_Amplitude", windStrength);
-        generateWindShader.Dispatch(0, Mathf.CeilToInt(wind.width / 8.0f), Mathf.CeilToInt(wind.height / 8.0f), 1);
+        generateWindShader.Dispatch(0, numWindThreadGroups, numWindThreadGroups, 1);
     }
 
     void Update() {
-        CullGrass(grassChunk);
-        CullGrass(grassChunk2);
+        Matrix4x4 P = Camera.main.projectionMatrix;
+        Matrix4x4 V = Camera.main.transform.worldToLocalMatrix;
+        Matrix4x4 VP = P * V;
+
+        CullGrass(grassChunk, VP);
+        CullGrass(grassChunk2, VP);
         GenerateWind();
-
-        grassChunk.material.SetBuffer("positionBuffer", grassChunk.culledPositionsBuffer);
-        grassChunk.material.SetFloat("_DisplacementStrength", displacementStrength);
-        grassChunk.material.SetTexture("_WindTex", wind);
-
-        grassChunk2.material.SetBuffer("positionBuffer", grassChunk2.culledPositionsBuffer);
-        grassChunk2.material.SetFloat("_DisplacementStrength", displacementStrength);
-        grassChunk2.material.SetTexture("_WindTex", wind);
 
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassChunk.material, grassChunk.bounds, grassChunk.argsBuffer);
         Graphics.DrawMeshInstancedIndirect(grassMesh, 0, grassChunk2.material, grassChunk2.bounds, grassChunk2.argsBuffer);
