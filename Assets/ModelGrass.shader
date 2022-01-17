@@ -41,6 +41,7 @@ Shader "Unlit/ModelGrass" {
                 float4 vertex : SV_POSITION;
                 float4 worldPos : TEXCOORD1;
                 float noiseVal : TEXCOORD2;
+                float3 chunkNum : TEXCOORD3;
             };
 
             struct GrassData {
@@ -53,6 +54,8 @@ Shader "Unlit/ModelGrass" {
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor, _FogColor;
             StructuredBuffer<GrassData> positionBuffer;
             float _Scale, _Droop, _FogDensity, _FogOffset;
+
+            int _ChunkNum;
 
             float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
                 float alpha = degrees * UNITY_PI / 180.0;
@@ -103,6 +106,7 @@ Shader "Unlit/ModelGrass" {
                 o.uv = v.uv;
                 o.noiseVal = tex2Dlod(_WindTex, worldUV).r;
                 o.worldPos = worldPosition;
+                o.chunkNum = float3(randValue(_ChunkNum * 20 + 1024), randValue(randValue(_ChunkNum) * 10 + 2048), randValue(_ChunkNum * 4 + 4096));
 
                 return o;
             }
@@ -114,7 +118,7 @@ Shader "Unlit/ModelGrass" {
 
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
                 float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y * (1.0f + _Scale));
-
+                //return fixed4(i.chunkNum, 1.0f);
                 //return i.noiseVal;
 
                 float4 grassColor = (col + tip) * ndotl * ao;

@@ -22,7 +22,7 @@ public class ModelGrass : MonoBehaviour {
 
     private RenderTexture wind;
 
-    private int numInstancesPerChunk, numThreadGroups, numVoteThreadGroups, numGroupScanThreadGroups, numWindThreadGroups;
+    private int numInstancesPerChunk, numThreadGroups, numVoteThreadGroups, numGroupScanThreadGroups, numWindThreadGroups, numGrassInitThreadGroups;
 
     private struct GrassData {
         public Vector4 position;
@@ -41,10 +41,10 @@ public class ModelGrass : MonoBehaviour {
     GrassChunk[] chunks;
 
     void OnEnable() {
-        numInstancesPerChunk = fieldSize * chunkDensity;
+        numInstancesPerChunk = Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity;
         numInstancesPerChunk *= numInstancesPerChunk;
 
-        numThreadGroups = numInstancesPerChunk / 128;
+        numThreadGroups = Mathf.CeilToInt(numInstancesPerChunk / 128.0f);
         if (numThreadGroups > 128) {
             int powerOfTwo = 128;
             while (powerOfTwo < numThreadGroups)
@@ -68,8 +68,9 @@ public class ModelGrass : MonoBehaviour {
         scannedGroupSumBuffer = new ComputeBuffer(numThreadGroups, 4);
 
         initializeGrassShader.SetInt("_Dimension", fieldSize);
+        initializeGrassShader.SetInt("_ChunkDimension", Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity);
         initializeGrassShader.SetInt("_Scale", chunkDensity);
-        initializeGrassShader.SetInt("_NumChunks", 2);
+        initializeGrassShader.SetInt("_NumChunks", numChunks);
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
 
@@ -82,11 +83,11 @@ public class ModelGrass : MonoBehaviour {
     }
 
     void initializeChunks() {
-        chunks = new GrassChunk[4];
+        chunks = new GrassChunk[numChunks * numChunks];
 
-        for (int x = 0; x < 2; ++x) {
-            for (int y = 0; y < 2; ++y) {
-                chunks[x + y * 2] = initializeGrassChunk(x, y);
+        for (int x = 0; x < numChunks; ++x) {
+            for (int y = 0; y < numChunks; ++y) {
+                chunks[x + y * numChunks] = initializeGrassChunk(x, y);
             }
         }
     }
@@ -107,17 +108,18 @@ public class ModelGrass : MonoBehaviour {
 
         chunk.positionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
         chunk.culledPositionsBuffer = new ComputeBuffer(numInstancesPerChunk, SizeOf(typeof(GrassData)));
-        chunk.bounds = new Bounds(this.transform.position, new Vector3(-20.0f, 200.0f, 20.0f));
+        chunk.bounds = new Bounds(this.transform.position, new Vector3(-300.0f, 200.0f, 300.0f));
 
         initializeGrassShader.SetInt("_XOffset", xOffset);
         initializeGrassShader.SetInt("_YOffset", yOffset);
         initializeGrassShader.SetBuffer(0, "_GrassDataBuffer", chunk.positionsBuffer);
-        initializeGrassShader.Dispatch(0, Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), Mathf.CeilToInt((fieldSize * chunkDensity) / 8.0f), 1);
+        initializeGrassShader.Dispatch(0, Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity, Mathf.CeilToInt(fieldSize / numChunks) * chunkDensity, 1);
 
         chunk.material = new Material(grassMaterial);
         chunk.material.SetBuffer("positionBuffer", chunk.culledPositionsBuffer);
         chunk.material.SetFloat("_DisplacementStrength", displacementStrength);
         chunk.material.SetTexture("_WindTex", wind);
+        chunk.material.SetInt("_ChunkNum", xOffset + yOffset * numChunks);
 
         return chunk;
     }
@@ -170,7 +172,7 @@ public class ModelGrass : MonoBehaviour {
 
         GenerateWind();
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < numChunks * numChunks; ++i) {
             CullGrass(chunks[i], VP);
             Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, chunks[i].bounds, chunks[i].argsBuffer);
         }
@@ -189,7 +191,7 @@ public class ModelGrass : MonoBehaviour {
         groupSumArrayBuffer = null;
 
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < numChunks * numChunks; ++i) {
             FreeChunk(chunks[i]);
         }
 
