@@ -13,6 +13,9 @@ public class ModelGrass : MonoBehaviour {
     public Mesh grassLODMesh;
     public Texture heightMap;
 
+    [Range(0, 1000.0f)]
+    public float distanceCutoff = 1000.0f;
+
     [Header("Wind")]
     public float windSpeed = 1.0f;
     public float frequency = 1.0f;
@@ -83,7 +86,7 @@ public class ModelGrass : MonoBehaviour {
         initializeGrassShader.SetTexture(0, "_HeightMap", heightMap);
         initializeGrassShader.SetFloat("_DisplacementStrength", displacementStrength);
 
-        wind = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        wind = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         wind.enableRandomWrite = true;
         wind.Create();
         numWindThreadGroups = Mathf.CeilToInt(wind.height / 8.0f);
@@ -163,6 +166,8 @@ public class ModelGrass : MonoBehaviour {
         cullGrassShader.SetMatrix("MATRIX_VP", VP);
         cullGrassShader.SetBuffer(0, "_GrassDataBuffer", chunk.positionsBuffer);
         cullGrassShader.SetBuffer(0, "_VoteBuffer", voteBuffer);
+        cullGrassShader.SetVector("_CameraPosition", Camera.main.transform.position);
+        cullGrassShader.SetFloat("_Distance", distanceCutoff);
         cullGrassShader.Dispatch(0, numVoteThreadGroups, 1, 1);
 
         // Scan Instances

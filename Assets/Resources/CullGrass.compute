@@ -26,6 +26,8 @@ float4x4 MATRIX_VP;
 int _NumOfGroups;
 groupshared uint temp[2 * NUM_THREAD_GROUPS_X];
 groupshared uint grouptemp[2 * 1024];
+float _Distance;
+float3 _CameraPosition;
 
 [numthreads(128, 1, 1)]
 void Vote(uint3 id : SV_DispatchThreadID) {
@@ -40,7 +42,10 @@ void Vote(uint3 id : SV_DispatchThreadID) {
     clipspace.y = clipspace.y / 2.0f + 0.5f;
     clipspace.z = -viewspace.w;
 
-    _VoteBuffer[id.x] = clipspace.x < -0.2f || clipspace.x > 1.2f || clipspace.z <= -0.1f ? 0 : 1;
+    bool inView = clipspace.x < -0.2f || clipspace.x > 1.2f || clipspace.z <= -0.1f ? 0 : 1;
+    bool withinDistance = distance(_CameraPosition, position.xyz) < _Distance;
+
+    _VoteBuffer[id.x] = inView * withinDistance;
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
