@@ -10,13 +10,14 @@ DISCLAIMER: This code is far from production ready, please do not attempt to use
 
 * GPU Instancing
 * GPU Frustum Culling
+* Chunked grass position buffers to cover any desired area
+* Level of detail applied to distant chunks
 * Scrolling noise texture to simulate wind
 * Shaders for quad grass and individual grass blade 3d models
 
 # TO DO:
 
-* GPU Level Of Detail
-* Expansion of prefix scan algorithm to allow for more than 2 ^ 18 elements.
+* Geometry shader grass
 
 ## Quad Grass
 
@@ -26,8 +27,18 @@ Implementation details [here](https://www.youtube.com/watch?v=Y0Ko0kvwfgA).
 
 ## 3D Model Grass
 
+Implementation details [here](https://youtu.be/jw00MbIJcrk).
+
 ![example2](./example2.png)
 
 ## GPU Frustum Culling
 
 ![example3](./example3.png)
+
+## Chunking
+
+![example4](./example4.png)
+
+## Level Of Detail
+
+![example5](./example5.png)
