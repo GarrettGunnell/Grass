@@ -14,6 +14,9 @@ public class ModelGrass : MonoBehaviour {
     public Texture heightMap;
 
     [Range(0, 1000.0f)]
+    public float lodCutoff = 1000.0f;
+
+    [Range(0, 1000.0f)]
     public float distanceCutoff = 1000.0f;
 
     [Header("Wind")]
@@ -210,12 +213,12 @@ public class ModelGrass : MonoBehaviour {
         for (int i = 0; i < numChunks * numChunks; ++i) {
             float dist = Vector3.Distance(Camera.main.transform.position, chunks[i].bounds.center);
 
-            bool noLOD = dist < chunkDimension;
+            bool noLOD = dist < lodCutoff;
 
             CullGrass(chunks[i], VP, noLOD);
             if (noLOD)
                 Graphics.DrawMeshInstancedIndirect(grassMesh, 0, chunks[i].material, fieldBounds, chunks[i].argsBuffer);
-            else 
+            else
                 Graphics.DrawMeshInstancedIndirect(grassLODMesh, 0, chunks[i].material, fieldBounds, chunks[i].argsBufferLOD);
         }
     }

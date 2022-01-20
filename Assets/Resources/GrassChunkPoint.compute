@@ -31,8 +31,8 @@ void InitializeGrassChunk(uint3 id : SV_DispatchThreadID) {
 
         pos.xz *= (1.0f / scale);
 
-        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.05f;
-        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.05f;
+        pos.x += snoise(float3(pos.xz + _XOffset + _YOffset, 0.0f) * 3.0f) * 0.05f;
+        pos.z += snoise(float3(pos.xz + _XOffset + _YOffset, 0.0f) * 4.0f) * 0.05f;
 
         float uvX = pos.x + dimension * 0.5f * _NumChunks * (1.0f / _NumChunks);
         float uvY = pos.z + dimension * 0.5f * _NumChunks * (1.0f / _NumChunks);
@@ -45,9 +45,9 @@ void InitializeGrassChunk(uint3 id : SV_DispatchThreadID) {
 
         pos.y += displacement.r * _DisplacementStrength + 0.5f;
 
-        float noise = abs(snoise(float3(pos.xz, 0.0f) * 0.2f));
+        float noise = abs(snoise(float3(pos.xz + _XOffset + _YOffset, 0.0f) * 2.2f));
 
-        pos.w = lerp(0.3f, 0.6f, noise);
+        pos.w = lerp(0.3f, 0.8f, noise);
 
         grass.position = pos;
         grass.displacement = displacement.r * _DisplacementStrength;
