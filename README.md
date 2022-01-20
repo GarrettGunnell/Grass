@@ -4,7 +4,7 @@ by Garrett Gunnell
 
 An exploration of grass rendering techniques.
 
-DISCLAIMER: This code is far from production ready, please do not attempt to use it as it is highly tuned to my specific needs.
+DISCLAIMER: While this grass is highly performant and optimized, please don't attempt to use it yourself as it is tuned to my needs. Instead, reference it as much as you'd like. I apologize for the mess.
 
 # Features
 
