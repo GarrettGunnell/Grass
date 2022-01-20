@@ -12,19 +12,22 @@ struct GrassData {
     float displacement;
 };
 
+RWStructuredBuffer<uint> _ArgsBuffer;
+RWStructuredBuffer<uint> _ArgsBufferLOD;
 RWStructuredBuffer<GrassData> _GrassDataBuffer;
-RWStructuredBuffer<uint> _GrassVoteBuffer;
-RWStructuredBuffer<uint> _GrassScanBuffer;
+RWStructuredBuffer<uint> _VoteBuffer;
+RWStructuredBuffer<uint> _ScanBuffer;
 RWStructuredBuffer<uint> _GroupSumArray;
-RWStructuredBuffer<GrassData> _CulledGrassOutputBuffer;
 RWStructuredBuffer<uint> _GroupSumArrayIn;
 RWStructuredBuffer<uint> _GroupSumArrayOut;
-RWStructuredBuffer<uint> _ArgsBuffer;
+RWStructuredBuffer<GrassData> _CulledGrassOutputBuffer;
 
 float4x4 MATRIX_VP;
 int _NumOfGroups;
 groupshared uint temp[2 * NUM_THREAD_GROUPS_X];
 groupshared uint grouptemp[2 * 1024];
+float _Distance;
+float3 _CameraPosition;
 
 [numthreads(128, 1, 1)]
 void Vote(uint3 id : SV_DispatchThreadID) {
@@ -39,7 +42,10 @@ void Vote(uint3 id : SV_DispatchThreadID) {
     clipspace.y = clipspace.y / 2.0f + 0.5f;
     clipspace.z = -viewspace.w;
 
-    _GrassVoteBuffer[id.x] = clipspace.x < -0.2f || clipspace.x > 1.2f || clipspace.z <= -0.1f ? 0 : 1;
+    bool inView = clipspace.x < -0.2f || clipspace.x > 1.2f || clipspace.z <= -0.1f ? 0 : 1;
+    bool withinDistance = distance(_CameraPosition, position.xyz) < _Distance;
+
+    _VoteBuffer[id.x] = inView * withinDistance;
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
@@ -50,8 +56,8 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
     int groupID = (int) _groupID.x;
 
     int offset = 1;
-    temp[2 * groupTID] = _GrassVoteBuffer[2 * tid];
-    temp[2 * groupTID + 1] = _GrassVoteBuffer[2 * tid + 1];
+    temp[2 * groupTID] = _VoteBuffer[2 * tid];
+    temp[2 * groupTID + 1] = _VoteBuffer[2 * tid + 1];
     int d;
     int numElements = 2 * NUM_THREAD_GROUPS_X;
 
@@ -87,8 +93,8 @@ void Scan(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, uint3
 
     GroupMemoryBarrierWithGroupSync();
 
-    _GrassScanBuffer[2 * tid] = temp[2 * groupTID];
-    _GrassScanBuffer[2 * tid + 1] = temp[2 * groupTID + 1];
+    _ScanBuffer[2 * tid] = temp[2 * groupTID];
+    _ScanBuffer[2 * tid + 1] = temp[2 * groupTID + 1];
 }
 
 // From GPU Gems Chapter 39 'Parallel Prefix Sum (Scan) with CUDA'
@@ -142,11 +148,11 @@ void Compact(uint3 id : SV_DISPATCHTHREADID, uint groupIndex : SV_GROUPINDEX, ui
     uint tid = id.x;
     uint groupID = _groupID.x;
     uint groupSum = groupID.x > 0 ? _GroupSumArray[groupID.x] : 0;
-    bool inCamera = _GrassVoteBuffer[id.x];
+    bool inCamera = _VoteBuffer[id.x];
     
     if (inCamera == 1) {
         InterlockedAdd(_ArgsBuffer[1], 1);
-        _CulledGrassOutputBuffer[_GrassScanBuffer[tid] + groupSum] = _GrassDataBuffer[tid];
+        _CulledGrassOutputBuffer[_ScanBuffer[tid] + groupSum] = _GrassDataBuffer[tid];
     }
 }
 

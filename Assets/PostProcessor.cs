@@ -10,6 +10,9 @@ public class PostProcessor : MonoBehaviour {
     
     [Range(0.0f, 1.0f)]
     public float fogDensity;
+
+    [Range(0.0f, 100.0f)]
+    public float fogOffset;
     
     private Material fogMat;
 
@@ -27,6 +30,7 @@ public class PostProcessor : MonoBehaviour {
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
         fogMat.SetVector("_FogColor", fogColor);
         fogMat.SetFloat("_FogDensity", fogDensity);
+        fogMat.SetFloat("_FogOffset", fogOffset);
         Graphics.Blit(source, destination, fogMat);
     }
 }
