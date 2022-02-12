@@ -1,0 +1,43 @@
+#pragma kernel InitializeGrass
+
+#include "Simplex.compute"
+
+struct GrassData {
+    float4 position;
+};
+
+RWStructuredBuffer<GrassData> _GrassDataBuffer;
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+
+int _Dimension, _Scale;
+float _DisplacementStrength;
+
+[numthreads(8,8,1)]
+void InitializeGrass(uint3 id : SV_DispatchThreadID) {
+    if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
+        GrassData grass;
+        
+        float4 pos = 0.0f;
+        pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
+
+        pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.05f;
+        pos.z += snoise(float3(pos.xz, 0.0f) * 4.0f) * 0.05f;
+
+        float2 uv = pos.xz;
+        uv = (id.xy) * (1.0f / float(_Scale));
+        uv.xy /= float(_Dimension) * (1.0f / float(_Scale));
+        uv.y = 1 - uv.y;
+        uv.x = 1 - uv.x;
+
+        float4 displacement = _HeightMap.SampleLevel(sampler_HeightMap, uv, 0);
+
+        pos.y += displacement.r * _DisplacementStrength + 0.5f;
+
+        pos.w = 1.0f;
+
+        grass.position = pos;
+
+        _GrassDataBuffer[id.x + id.y * _Dimension] = grass;
+    }
+}
