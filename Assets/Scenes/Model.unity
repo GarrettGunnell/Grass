@@ -556,25 +556,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8188846882738213437, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
---- !u!114 &1422709753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1422709744}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47134b66cbe681642a7512dbacbf9aec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  resolution: 300
-  scale: 2
-  displacementStrength: 0
-  grassMaterial: {fileID: 2100000, guid: 5db16e570f58b294ba71dd3f4ebce284, type: 2}
-  grassMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-  heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
-  updateGrass: 0
 --- !u!114 &1422709757
 MonoBehaviour:
   m_ObjectHideFlags: 0

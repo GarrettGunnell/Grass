@@ -28,7 +28,6 @@ void InitializeGrassChunk(uint3 id : SV_DispatchThreadID) {
 
         pos.x = (id.x - (chunkDimension * 0.5f * _NumChunks)) + chunkDimension * _XOffset;
         pos.z = (id.y - (chunkDimension * 0.5f * _NumChunks)) + chunkDimension * _YOffset;
-
         pos.xz *= (1.0f / scale);
 
         pos.x += snoise(float3(pos.xz + _XOffset + _YOffset, 0.0f) * 3.0f) * 0.05f;
