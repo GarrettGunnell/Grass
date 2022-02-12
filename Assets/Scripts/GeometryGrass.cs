@@ -8,11 +8,11 @@ public class GeometryGrass : MonoBehaviour {
     public int scale = 1;
     public float displacementStrength = 200.0f;
     public Material grassMaterial;
-    public Mesh grassMesh;
     public Texture heightMap;
 
     private ComputeShader initializeGrassShader;
     private ComputeBuffer grassDataBuffer;
+    private Bounds bounds;
 
     private struct GrassData {
         public Vector4 position;
@@ -22,6 +22,7 @@ public class GeometryGrass : MonoBehaviour {
         resolution *= scale;
         initializeGrassShader = Resources.Load<ComputeShader>("GrassGeometryPoint");
         grassDataBuffer = new ComputeBuffer(resolution * resolution, SizeOf(typeof(GrassData)));
+        bounds = new Bounds(Vector3.zero, new Vector3(-resolution,displacementStrength * 2.0f, resolution));
 
         updateGrassBuffer();
     }
@@ -38,7 +39,7 @@ public class GeometryGrass : MonoBehaviour {
     }
 
     void Update() {
-
+        Graphics.DrawProcedural(grassMaterial, bounds, MeshTopology.Points, 1, grassDataBuffer.count);
     }
     
     void OnDisable() {

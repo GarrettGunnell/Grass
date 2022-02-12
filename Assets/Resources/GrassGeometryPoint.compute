@@ -17,7 +17,7 @@ float _DisplacementStrength;
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
         GrassData grass;
-        
+
         float4 pos = 0.0f;
         pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
 
@@ -32,7 +32,7 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
 
         float4 displacement = _HeightMap.SampleLevel(sampler_HeightMap, uv, 0);
 
-        pos.y += displacement.r * _DisplacementStrength + 0.5f;
+        pos.y += displacement.r * _DisplacementStrength + 0.01f;
 
         pos.w = 1.0f;
 
