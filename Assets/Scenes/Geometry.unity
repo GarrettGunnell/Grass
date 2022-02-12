@@ -231,6 +231,7 @@ GameObject:
   - component: {fileID: 1496710553}
   - component: {fileID: 1496710552}
   - component: {fileID: 1496710551}
+  - component: {fileID: 1496710554}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -304,6 +305,46 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1496710554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1496710550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a44431a3cc1dc248b152958ea492ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boost: 3.5
+  positionLerpTime: 0.2
+  mouseSensitivityCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.5
+      inSlope: 0
+      outSlope: 5
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 2.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  rotationLerpTime: 0.01
+  invertY: 0
 --- !u!1 &1744717385
 GameObject:
   m_ObjectHideFlags: 0
@@ -464,7 +505,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
   m_PrefabInstance: {fileID: 1930419185}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1930419187
+--- !u!114 &1930419188
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -473,6 +514,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1930419186}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1c06730b4f727c49ab068ac788fe858, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e0867614e9bb124dbab6584cfc79f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resolution: 100
+  scale: 5
+  displacementStrength: 25
+  grassMaterial: {fileID: 2100000, guid: cf7ccfb5a4a31c74fb1c748aff3be11e, type: 2}
+  heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
