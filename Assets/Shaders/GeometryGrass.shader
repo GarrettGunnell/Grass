@@ -93,7 +93,7 @@ Shader "Unlit/GeometryGrass" {
                         v[i].uv = float2(1, currentV);
 
                         currentV += offsetV;
-                        currentVertexHeight = currentV * _Height;
+                        currentVertexHeight = currentV * _Height * lerp(0.9f, 1.25f, idHash);
                     }
 
                     v[i].vertex.xyz -= root.xyz;
