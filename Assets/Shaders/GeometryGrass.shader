@@ -1,6 +1,9 @@
 Shader "Unlit/GeometryGrass" {
     Properties {
-        _MainTex ("Texture", 2D) = "white" {}
+        _Albedo1 ("Albedo 1", Color) = (1, 1, 1)
+        _Albedo2 ("Albedo 2", Color) = (1, 1, 1)
+        _AOColor ("Ambient Occlusion", Color) = (1, 1, 1)
+        _TipColor ("Tip Color", Color) = (1, 1, 1)
         _Height("Grass Height", float) = 3
 		_Width("Grass Width", range(0, 0.1)) = 0.05
     }
@@ -32,10 +35,12 @@ Shader "Unlit/GeometryGrass" {
 
             struct g2f {
                 float4 vertex : SV_POSITION;
+                float2 uv : TEXCOORD0;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             float _Height, _Width;
 
             v2g vp(VertexData v) {
@@ -57,6 +62,7 @@ Shader "Unlit/GeometryGrass" {
 
                 for (i = 0; i < vertexCount; ++i) {
                     v[i].vertex = 0.0f;
+                    v[i].uv = 0.0f;
                 }
 
                 float currentV = 0;
@@ -72,8 +78,10 @@ Shader "Unlit/GeometryGrass" {
                     
                     if (i % 2 == 0) {
                         v[i].vertex = float4(root.x - (_Width * widthMod), root.y + currentVertexHeight, root.z, 1);
+                        v[i].uv = float2(0, currentV);
                     } else {
                         v[i].vertex = float4(root.x + (_Width * widthMod), root.y + currentVertexHeight, root.z, 1);
+                        v[i].uv = float2(1, currentV);
 
                         currentV += offsetV;
                         currentVertexHeight = currentV * _Height;
@@ -90,7 +98,14 @@ Shader "Unlit/GeometryGrass" {
             }
 
             fixed4 fp(g2f i) : SV_Target {
-                return 1.0f;
+                float4 col = lerp(_Albedo1, _Albedo2, i.uv.y);
+                float3 lightDir = _WorldSpaceLightPos0.xyz;
+                float ndotl = DotClamped(lightDir, normalize(float3(0, 1, 0)));
+
+                float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
+                float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y);
+                
+                return (col + tip) * ndotl * ao;
             }
 
             ENDCG
