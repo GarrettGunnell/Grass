@@ -12,8 +12,8 @@ Shader "Unlit/GeometryGrass" {
 
         Pass {
             CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex vp
+            #pragma fragment fp
             
             #pragma target 4.5
 
@@ -30,23 +30,22 @@ Shader "Unlit/GeometryGrass" {
                 float4 vertex : SV_POSITION;
             };
 
-            struct GrassData {
-                float4 position;
+            struct g2f {
+                float4 vertex : SV_POSITION;
             };
 
-            sampler2D _MainTex, _HeightMap;
+            sampler2D _MainTex;
             float4 _MainTex_ST;
-            StructuredBuffer<GrassData> positionBuffer;
 
-            v2f vert (VertexData v, uint instanceID : SV_INSTANCEID) {
+            v2f vp(VertexData v) {
                 v2f o;
 
-                o.vertex = UnityObjectToClipPos(positionBuffer[instanceID].position);
+                o.vertex = UnityObjectToClipPos(v.vertex);
                 
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target {
+            fixed4 fp(v2f i) : SV_Target {
                 return 1.0f;
             }
 

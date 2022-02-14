@@ -2,11 +2,9 @@
 
 #include "Simplex.compute"
 
-struct GrassData {
-    float4 position;
-};
 
-RWStructuredBuffer<GrassData> _GrassDataBuffer;
+RWStructuredBuffer<float3> _GrassDataBuffer;
+RWStructuredBuffer<int> _GrassIndicesBuffer;
 Texture2D<float4> _HeightMap;
 SamplerState sampler_HeightMap;
 
@@ -16,9 +14,7 @@ float _DisplacementStrength;
 [numthreads(8,8,1)]
 void InitializeGrass(uint3 id : SV_DispatchThreadID) {
     if (id.x < uint(_Dimension) && id.y < uint(_Dimension)) {
-        GrassData grass;
-
-        float4 pos = 0.0f;
+        float3 pos = 0.0f;
         pos.xz = (id.xy - float(_Dimension) * 0.5) * (1.0f / float(_Scale));
 
         pos.x += snoise(float3(pos.xz, 0.0f) * 3.0f) * 0.05f;
@@ -34,10 +30,7 @@ void InitializeGrass(uint3 id : SV_DispatchThreadID) {
 
         pos.y += displacement.r * _DisplacementStrength + 0.01f;
 
-        pos.w = 1.0f;
-
-        grass.position = pos;
-
-        _GrassDataBuffer[id.x + id.y * _Dimension] = grass;
+        _GrassDataBuffer[id.x + id.y * _Dimension] = pos;
+        _GrassIndicesBuffer[id.x + id.y * _Dimension] = id.x + id.y * _Dimension;
     }
 }
