@@ -38,8 +38,6 @@ Shader "Unlit/GeometryGrass" {
                 float2 uv : TEXCOORD0;
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
             float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
             float _Height, _Width;
 
@@ -51,10 +49,21 @@ Shader "Unlit/GeometryGrass" {
                 return o;
             }
 
+            float4 RotateAroundYInDegrees (float4 vertex, float degrees) {
+                float alpha = degrees * UNITY_PI / 180.0;
+                float sina, cosa;
+                sincos(alpha, sina, cosa);
+                float2x2 m = float2x2(cosa, -sina, sina, cosa);
+                return float4(mul(m, vertex.xz), vertex.yw).xzyw;
+            }
+
             [maxvertexcount(30)]
             void gp(point v2g points[1], inout TriangleStream<g2f> triStream) {
                 int i;
                 float4 root = points[0].vertex;
+
+                float idHash = randValue(abs(root.x * 10000 + root.y * 100 + root.z * 0.05f + 2));
+                idHash = randValue(idHash * 100000);
 
                 const int vertexCount = 12;
 
@@ -87,7 +96,11 @@ Shader "Unlit/GeometryGrass" {
                         currentVertexHeight = currentV * _Height;
                     }
 
+                    v[i].vertex.xyz -= root.xyz;
+                    v[i].vertex = RotateAroundYInDegrees(v[i].vertex, idHash * 180.0f);
+                    v[i].vertex.xyz += root.xyz;
                     v[i].vertex = UnityObjectToClipPos(v[i].vertex);
+                
                 }
 
                 for (i = 0; i < vertexCount - 2; ++i) {
