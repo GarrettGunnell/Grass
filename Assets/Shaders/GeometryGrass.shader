@@ -6,6 +6,9 @@ Shader "Unlit/GeometryGrass" {
         _TipColor ("Tip Color", Color) = (1, 1, 1)
         _Height("Grass Height", float) = 3
 		_Width("Grass Width", range(0, 0.1)) = 0.05
+        _FogColor ("Fog Color", Color) = (1, 1, 1)
+        _FogDensity ("Fog Density", Range(0.0, 1.0)) = 0.0
+        _FogOffset ("Fog Offset", Range(0.0, 10.0)) = 0.0
     }
 
     SubShader {
@@ -42,9 +45,11 @@ Shader "Unlit/GeometryGrass" {
             struct g2f {
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                float4 worldPos : TEXCOORD1;
             };
 
-            float4 _Albedo1, _Albedo2, _AOColor, _TipColor;
+            float4 _Albedo1, _Albedo2, _AOColor, _TipColor, _FogColor;
+            float _FogDensity, _FogOffset;
             float _Height, _Width;
 
             v2g vp(VertexData v) {
@@ -99,12 +104,16 @@ Shader "Unlit/GeometryGrass" {
                         v[i].uv = float2(1, currentV);
 
                         currentV += offsetV;
-                        currentVertexHeight = currentV * _Height * lerp(0.9f, 1.25f, idHash);
+                        currentVertexHeight = currentV * _Height * lerp(0.9f, 1.35f, idHash);
                     }
 
+                    float sway = snoise(v[i].vertex.xyz * 0.35f + _Time.y * 0.25f) * v[i].uv.y * 0.07f;
+                    v[i].vertex.xz += sway;
                     v[i].vertex.xyz -= root.xyz;
                     v[i].vertex = RotateAroundYInDegrees(v[i].vertex, idHash * 180.0f);
                     v[i].vertex.xyz += root.xyz;
+
+                    v[i].worldPos = v[i].vertex;
                     v[i].vertex = UnityObjectToClipPos(v[i].vertex);
                 
                 }
@@ -124,7 +133,15 @@ Shader "Unlit/GeometryGrass" {
                 float4 ao = lerp(_AOColor, 1.0f, i.uv.y);
                 float4 tip = lerp(0.0f, _TipColor, i.uv.y * i.uv.y);
                 
-                return (col + tip) * ndotl * ao;
+                float4 grassColor = (col + tip) * ndotl * ao;
+
+                /* Fog */
+                float viewDistance = length(_WorldSpaceCameraPos - i.worldPos);
+                float fogFactor = (_FogDensity / sqrt(log(2))) * (max(0.0f, viewDistance - _FogOffset));
+                fogFactor = exp2(-fogFactor * fogFactor);
+
+
+                return lerp(_FogColor, grassColor, fogFactor);
             }
 
             ENDCG
