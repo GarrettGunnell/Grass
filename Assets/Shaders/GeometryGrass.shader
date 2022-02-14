@@ -1,9 +1,8 @@
 Shader "Unlit/GeometryGrass" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
-        _WindStrength ("Wind Strength", Range(0.5, 50.0)) = 1
-        _CullingBias ("Cull Bias", Range(0.1, 1.0)) = 0.5
-        _LODCutoff ("LOD Cutoff", Range(10.0, 500.0)) = 100
+        _Height("Grass Height", float) = 3
+		_Width("Grass Width", range(0, 0.1)) = 0.05
     }
 
     SubShader {
@@ -14,6 +13,7 @@ Shader "Unlit/GeometryGrass" {
             CGPROGRAM
             #pragma vertex vp
             #pragma fragment fp
+            #pragma geometry gp
             
             #pragma target 4.5
 
@@ -26,7 +26,7 @@ Shader "Unlit/GeometryGrass" {
                 float2 uv : TEXCOORD0;
             };
 
-            struct v2f {
+            struct v2g {
                 float4 vertex : SV_POSITION;
             };
 
@@ -36,16 +36,56 @@ Shader "Unlit/GeometryGrass" {
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            float _Height, _Width;
 
-            v2f vp(VertexData v) {
-                v2f o;
+            v2g vp(VertexData v) {
+                v2g o;
 
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = v.vertex;
                 
                 return o;
             }
 
-            fixed4 fp(v2f i) : SV_Target {
+            [maxvertexcount(30)]
+            void gp(point v2g points[1], inout TriangleStream<g2f> triStream) {
+                int i;
+                float4 root = points[0].vertex;
+
+                const int vertexCount = 12;
+
+                g2f v[vertexCount];
+
+                for (i = 0; i < vertexCount; ++i) {
+                    v[i].vertex = 0.0f;
+                }
+
+                float currentV = 0;
+                float offsetV = 1.0f / ((vertexCount / 2) - 1);
+
+                float currentHeightOffset = 0;
+                float currentVertexHeight = 0;
+
+                for (i = 0; i < vertexCount; ++i) {
+                    if (i % 2 == 0) {
+                        v[i].vertex = float4(root.x - _Width, root.y + currentVertexHeight, root.z, 1);
+                    } else {
+                        v[i].vertex = float4(root.x + _Width, root.y + currentVertexHeight, root.z, 1);
+
+                        currentV += offsetV;
+                        currentVertexHeight = currentV * _Height;
+                    }
+
+                    v[i].vertex = UnityObjectToClipPos(v[i].vertex);
+                }
+
+                for (i = 0; i < vertexCount - 2; ++i) {
+                    triStream.Append(v[i]);
+                    triStream.Append(v[i + 2]);
+                    triStream.Append(v[i + 1]);
+                }
+            }
+
+            fixed4 fp(g2f i) : SV_Target {
                 return 1.0f;
             }
 
