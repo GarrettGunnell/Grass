@@ -66,10 +66,14 @@ Shader "Unlit/GeometryGrass" {
                 float currentVertexHeight = 0;
 
                 for (i = 0; i < vertexCount; ++i) {
+
+                    float widthMod = 1.0f - float(i) / float(vertexCount);
+                    widthMod = pow(widthMod * widthMod, 1.0f / 3.0f);
+                    
                     if (i % 2 == 0) {
-                        v[i].vertex = float4(root.x - _Width, root.y + currentVertexHeight, root.z, 1);
+                        v[i].vertex = float4(root.x - (_Width * widthMod), root.y + currentVertexHeight, root.z, 1);
                     } else {
-                        v[i].vertex = float4(root.x + _Width, root.y + currentVertexHeight, root.z, 1);
+                        v[i].vertex = float4(root.x + (_Width * widthMod), root.y + currentVertexHeight, root.z, 1);
 
                         currentV += offsetV;
                         currentVertexHeight = currentV * _Height;
