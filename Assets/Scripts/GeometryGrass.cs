@@ -33,6 +33,7 @@ public class GeometryGrass : MonoBehaviour {
         grassIndicesBuffer.GetData(grassIndices);
 
         grassMesh = new Mesh {name = "Grass"};
+        grassMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         grassMesh.vertices = grassVertices;
         grassMesh.SetIndices(grassIndices, MeshTopology.Points, 0);
 
