@@ -12,6 +12,11 @@ Shader "Unlit/GeometryGrass" {
         Cull Off
         Zwrite On
 
+        Tags {
+            "RenderType" = "Transparent"
+            "Queue" = "Transparent"
+        }
+
         Pass {
             CGPROGRAM
             #pragma vertex vp
@@ -23,6 +28,7 @@ Shader "Unlit/GeometryGrass" {
             #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
             #include "../Resources/Random.cginc"
+            #include "../Resources/Simplex.compute"
 
             struct VertexData {
                 float4 vertex : POSITION;

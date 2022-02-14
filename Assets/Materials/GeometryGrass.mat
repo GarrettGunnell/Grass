@@ -69,6 +69,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _Height: 0.5
     - _LODCutoff: 100
     - _Metallic: 0
     - _Mode: 0
@@ -78,9 +79,14 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _Width: 0.0286
     - _WindStrength: 0.5
     - _ZWrite: 1
     m_Colors:
+    - _AOColor: {r: 0.1981132, g: 0.15435016, b: 0.04018334, a: 1}
+    - _Albedo1: {r: 0.42963138, g: 0.9433962, b: 0.4138483, a: 1}
+    - _Albedo2: {r: 0.915, g: 0.88600326, b: 0.804285, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _TipColor: {r: 0.5184265, g: 0.582, b: 0.36258602, a: 1}
   m_BuildTextureStacks: []
