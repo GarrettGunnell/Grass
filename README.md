@@ -14,10 +14,7 @@ DISCLAIMER: While this grass is highly performant and optimized, please don't at
 * Level of detail applied to distant chunks
 * Scrolling noise texture to simulate wind
 * Shaders for quad grass and individual grass blade 3d models
-
-# TO DO:
-
-* Geometry shader grass
+* Geometry Shader Grass
 
 ## Quad Grass
 
@@ -42,3 +39,9 @@ Implementation details [here](https://youtu.be/jw00MbIJcrk).
 ## Level Of Detail
 
 ![example5](./example5.png)
+
+## Geometry Shader Grass
+
+(don't reference the code for this or use it)
+
+![example6](./example6.png)
