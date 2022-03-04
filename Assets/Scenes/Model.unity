@@ -230,11 +230,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
       propertyPath: m_LocalScale.x
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
       propertyPath: m_LocalScale.z
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
       propertyPath: m_LocalPosition.x
@@ -376,7 +376,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 806405997}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 6.5, z: 0}
+  m_LocalPosition: {x: 0, y: 3.43, z: 0}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -396,6 +396,7 @@ GameObject:
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
   - component: {fileID: 963194230}
+  - component: {fileID: 963194231}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -522,9 +523,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fogShader: {fileID: 4800000, guid: 14e87e2b7db94794382618452e8f1ade, type: 3}
-  fogColor: {r: 0.65882355, g: 0.77254903, b: 0.8745098, a: 0}
-  fogDensity: 0.024
-  fogOffset: 20
+  fogColor: {r: 0.8117648, g: 0.9176471, b: 0.9490197, a: 1}
+  fogDensity: 0.01
+  fogOffset: 0
+--- !u!114 &963194231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c9e71910b14a24a88261c91832db84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  postProcessingShader: {fileID: 4800000, guid: 208af3f23fb50d54890017696047e383, type: 3}
+  contrast: 1
+  brightness: 0
+  saturation: 1
+  gamma: 1
 --- !u!1 &1422709744 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 697d5844150f9a4429a34af057b64ffe, type: 3}
@@ -568,16 +586,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7f78c55bd4018c4b9e9b7844f315113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fieldSize: 300
-  chunkDensity: 10
+  fieldSize: 100
+  chunkDensity: 12
   numChunks: 10
-  displacementStrength: 45
+  displacementStrength: 20
   grassMaterial: {fileID: 2100000, guid: 4b2d534b19470a54b8a2dad8062c0e1c, type: 2}
   grassMesh: {fileID: 7629811779324647873, guid: 73829f8af30a2db499de1c2f530f9744, type: 3}
   grassLODMesh: {fileID: 7629811779324647873, guid: cd460ce2340a5ea498d0c72d73a5acd6, type: 3}
   heightMap: {fileID: 2800000, guid: 8a299a99dfe3b2544907cc969e31710c, type: 3}
   lodCutoff: 20
   distanceCutoff: 268
-  windSpeed: 2
-  frequency: 0.4
-  windStrength: 0.2
+  windSpeed: 6
+  frequency: 0.2
+  windStrength: 0.1

@@ -73,7 +73,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Scale: 0.46
+    - _Scale: 0.25
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -81,10 +81,10 @@ Material:
     - _WindStrength: 0.5
     - _ZWrite: 1
     m_Colors:
-    - _AOColor: {r: 0.26415092, g: 0.1281519, b: 0.095941596, a: 1}
+    - _AOColor: {r: 0.094117634, g: 0.16034704, b: 0.2627451, a: 1}
     - _Albedo: {r: 0.84029955, g: 1, b: 0.740566, a: 1}
-    - _Albedo1: {r: 0.8962264, g: 0.8838692, b: 0.6552599, a: 1}
-    - _Albedo2: {r: 0.4528302, g: 0.3011748, b: 0.31850174, a: 1}
+    - _Albedo1: {r: 0.6798911, g: 0.8980392, b: 0.654902, a: 1}
+    - _Albedo2: {r: 0.3019608, g: 0.4509804, b: 0.36278453, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FogColor: {r: 0.9386792, g: 1, b: 0.9829519, a: 1}

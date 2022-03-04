@@ -4,33 +4,34 @@ using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 public class PostProcessor : MonoBehaviour {
-    public Shader fogShader;
+    public Shader postProcessingShader;
 
-    public Color fogColor;
+    [Range(0.0f, 5.0f)]
+    public float contrast;
     
-    [Range(0.0f, 1.0f)]
-    public float fogDensity;
-
-    [Range(0.0f, 100.0f)]
-    public float fogOffset;
+    [Range(-1.0f, 1.0f)]
+    public float brightness;
     
-    private Material fogMat;
+    [Range(0.0f, 5.0f)]
+    public float saturation;
+    
+    [Range(0.0f, 5.0f)]
+    public float gamma;
+    
+    private Material postProcessMat;
 
     void Start() {
-        if (fogMat == null) {
-            fogMat = new Material(fogShader);
-            fogMat.hideFlags = HideFlags.HideAndDontSave;
+        if (postProcessMat == null) {
+            postProcessMat = new Material(postProcessingShader);
+            postProcessMat.hideFlags = HideFlags.HideAndDontSave;
         }
-
-        Camera cam = GetComponent<Camera>();
-        cam.depthTextureMode = cam.depthTextureMode | DepthTextureMode.Depth;
     }
 
-    [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
-        fogMat.SetVector("_FogColor", fogColor);
-        fogMat.SetFloat("_FogDensity", fogDensity);
-        fogMat.SetFloat("_FogOffset", fogOffset);
-        Graphics.Blit(source, destination, fogMat);
+        postProcessMat.SetFloat("_Contrast", contrast);
+        postProcessMat.SetFloat("_Brightness", brightness);
+        postProcessMat.SetFloat("_Saturation", saturation);
+        postProcessMat.SetFloat("_Gamma", gamma);
+        Graphics.Blit(source, destination, postProcessMat);
     }
 }
